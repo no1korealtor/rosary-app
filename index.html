@@ -462,9 +462,11 @@ html, body {
 }
 
 .meditation-title {
-  font-size: 0.8rem;
-  font-weight: 700;
+  font-size: 1.05rem;
+  font-weight: 800;
   color: var(--gold-primary);
+  letter-spacing: -0.2px;
+  line-height: 1.3;
 }
 
 .meditation-text {
@@ -1949,10 +1951,10 @@ input:checked + .toggle-slider:before {
 }
 
 .intro-top-header {
-  padding-top: max(10px, var(--safe-top));
-  padding-left: 16px;
-  padding-right: 16px;
-  padding-bottom: 8px;
+  padding-top: max(8px, var(--safe-top));
+  padding-left: 12px;
+  padding-right: 12px;
+  padding-bottom: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1963,7 +1965,9 @@ input:checked + .toggle-slider:before {
 .intro-brand {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
 .intro-cross-icon {
@@ -1971,16 +1975,18 @@ input:checked + .toggle-slider:before {
 }
 
 .intro-brand-name {
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--gold-primary);
   letter-spacing: -0.3px;
+  white-space: nowrap;
 }
 
 .intro-top-actions {
   display: flex;
   align-items: center;
   gap: 6px;
+  flex-shrink: 0;
 }
 
 .intro-scroll-body {
@@ -2201,6 +2207,123 @@ input:checked + .toggle-slider:before {
 
 .dm-guide-text strong {
   color: #FFFFFF;
+}
+
+/* 전례력 뱃지 및 전례색 테마 배너 */
+.liturgical-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  padding: 4px 10px;
+  border-radius: var(--radius-full);
+  letter-spacing: -0.2px;
+  white-space: nowrap;
+}
+.liturgical-badge.color-white {
+  background: rgba(255, 255, 255, 0.22);
+  color: #FFFDF0;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 8px rgba(255, 255, 255, 0.2);
+}
+.liturgical-badge.color-red {
+  background: rgba(220, 38, 38, 0.35);
+  color: #FECACA;
+  border: 1px solid rgba(248, 113, 113, 0.55);
+}
+.liturgical-badge.color-green {
+  background: rgba(34, 197, 94, 0.28);
+  color: #BBF7D0;
+  border: 1px solid rgba(74, 222, 128, 0.5);
+}
+.liturgical-badge.color-violet {
+  background: rgba(168, 85, 247, 0.32);
+  color: #E9D5FF;
+  border: 1px solid rgba(192, 132, 252, 0.55);
+}
+.liturgical-badge.color-rose {
+  background: rgba(244, 114, 182, 0.32);
+  color: #FCE7F3;
+  border: 1px solid rgba(244, 114, 182, 0.55);
+}
+
+.liturgical-info-banner {
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin-bottom: 0px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 72px;
+  box-sizing: border-box;
+  flex-shrink: 0;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: visible;
+}
+
+/* 전례색별 풍부하고 품격 있는 배경 테마 */
+.liturgical-info-banner.theme-green {
+  background: linear-gradient(135deg, #1b4d2e 0%, #0d2818 100%);
+  border: 1.5px solid #2e7d32;
+  box-shadow: 0 4px 16px rgba(13, 40, 24, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+.liturgical-info-banner.theme-white {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.2) 0%, rgba(212, 175, 55, 0.25) 100%);
+  border: 1.5px solid #F3C669;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+}
+.liturgical-info-banner.theme-red {
+  background: linear-gradient(135deg, #7f1d1d 0%, #450a0a 100%);
+  border: 1.5px solid #dc2626;
+  box-shadow: 0 4px 16px rgba(69, 10, 10, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.liturgical-info-banner.theme-violet {
+  background: linear-gradient(135deg, #4c1d95 0%, #2e1065 100%);
+  border: 1.5px solid #8b5cf6;
+  box-shadow: 0 4px 16px rgba(46, 16, 101, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+.liturgical-info-banner.theme-rose {
+  background: linear-gradient(135deg, #831843 0%, #500724 100%);
+  border: 1.5px solid #ec4899;
+  box-shadow: 0 4px 16px rgba(80, 7, 36, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+}
+
+.liturgical-info-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex: 1;
+}
+.liturgical-info-date {
+  font-size: 0.78rem;
+  line-height: 1.3;
+  color: rgba(255, 255, 255, 0.85);
+  font-weight: 500;
+  letter-spacing: 0.2px;
+}
+.liturgical-info-dayname {
+  font-size: 1.05rem;
+  line-height: 1.35;
+  font-weight: 800;
+  color: #FFFFFF;
+  letter-spacing: -0.3px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  word-break: keep-all;
+}
+.liturgical-today-mystery-callout {
+  font-size: 0.73rem;
+  color: var(--gold-primary);
+  background: rgba(243, 198, 105, 0.1);
+  padding: 2px 7px;
+  border-radius: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
 }
 
 /* 4대 신비 선택 2x2 그리드 */
@@ -4368,7 +4491,7 @@ input:focus, textarea:focus {
     <section id="introView" class="intro-view">
       <!-- 상단 헤더 바 -->
       <header class="intro-top-header">
-        <div class="intro-brand">
+        <div class="intro-brand" title="거룩한 묵주기도">
           <span class="intro-cross-icon">✝️</span>
           <span class="intro-brand-name">묵주기도</span>
         </div>
@@ -4376,19 +4499,8 @@ input:focus, textarea:focus {
           <button id="btnHeaderBgmToggle" type="button" class="icon-btn" onclick="if(window.rosaryApp){window.rosaryApp.toggleBgm();}else{directToggleBgm();}" aria-label="배경음악 토글" title="은은한 성당 배경음악 (BGM)">
             <span id="btnHeaderBgmIcon" style="font-size: 1.05rem;">🎵</span>
           </button>
-          <button id="btnHeaderLangToggle" type="button" class="action-pill-btn" onclick="toggleGlobalLanguage();" style="height: 32px; padding: 0 10px; font-size: 0.78rem; font-weight: 700; margin-right: 4px; background: rgba(243, 198, 105, 0.12); border: 1px solid rgba(243, 198, 105, 0.35); color: var(--gold-primary); border-radius: 16px;">
-            🌐 EN
-          </button>
           <button id="btnIntroYeondoQuick" class="icon-btn yeondo-quick-header-btn" onclick="if(window.rosaryApp){window.rosaryApp.switchView('yeondo');}else{var iv=document.getElementById('introView');var yv=document.getElementById('yeondoView');if(iv)iv.style.display='none';if(yv)yv.style.display='flex';}" aria-label="짧은 연도 (약식 위령기도)" title="짧은 연도 (약식 위령기도 · 조문 예절)">
             <span style="font-size: 1.05rem;">🕯️</span>
-          </button>
-          <button id="btnIntroTracker" class="icon-btn" onclick="directOpenTracker();" aria-label="주간 기도 기록" title="주간 기도 기록">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="16" y1="2" x2="16" y2="6"></line>
-              <line x1="8" y1="2" x2="8" y2="6"></line>
-              <line x1="3" y1="10" x2="21" y2="10"></line>
-            </svg>
           </button>
           <button id="btnIntroSettings" class="icon-btn" onclick="directOpenSettings();" aria-label="설정" title="설정">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -4402,45 +4514,40 @@ input:focus, textarea:focus {
       <!-- 스크롤 가능한 본문 -->
       <div class="intro-scroll-body">
         
-        <!-- 타이틀 & 날짜 헤더 -->
-        <div class="intro-hero-box">
-          <div class="intro-rose-emblem">🌹🕊️</div>
-          <h1 id="introHeroTitle" class="intro-hero-title">거룩한 묵주기도</h1>
-          <p id="introHeroDate" class="intro-hero-date">10월 14일 수요일</p>
-          <p id="introHeroQuote" class="intro-hero-quote">"성모님과 함께 바치는 거룩한 장미 화관"</p>
-        </div>
-
-        <!-- 2. 은은한 묵상 배경음악 (BGM) 컨트롤 카드 -->
-        <div id="introBgmCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.12) 0%, rgba(22, 31, 51, 0.9) 100%); border: 1.2px solid rgba(243, 198, 105, 0.35);">
-          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 8px;">
-              <span class="intro-card-icon" style="font-size: 1.15rem;">🎵</span>
+        <!-- [NEW] 2027 서울 세계청년대회 (WYD 2027) 공식 기도문 바로가기 배너 카드 -->
+        <div id="introWydBannerCard" class="intro-section-card" onclick="openWydModal();" style="cursor: pointer; background: linear-gradient(135deg, rgba(243, 198, 105, 0.18) 0%, rgba(59, 130, 246, 0.22) 100%); border: 1.5px solid rgba(243, 198, 105, 0.55); box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35); padding: 12px 14px; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+            <div style="display: flex; align-items: center; gap: 10px;">
+              <span style="font-size: 1.6rem; line-height: 1;">🕊️</span>
               <div>
-                <span class="intro-card-title" style="font-size: 0.92rem; font-weight: 800;">은은한 묵상 배경음악 (BGM)</span>
-                <small style="display: block; font-size: 0.72rem; color: var(--text-muted); margin-top: 1px;">박자 없이 서두르지 않는 성당 오르간/성가</small>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                  <span style="font-size: 0.92rem; font-weight: 800; color: #FFF;">2027 서울 세계청년대회 공식 기도문</span>
+                  <span style="background: rgba(243, 198, 105, 0.3); color: #FDE68A; font-size: 0.68rem; font-weight: 800; padding: 2px 6px; border-radius: 10px; border: 1px solid rgba(243, 198, 105, 0.4);">WYD 2027</span>
+                </div>
+                <div style="font-size: 0.76rem; color: rgba(255, 255, 255, 0.82); margin-top: 2px;">
+                  "용기를 내어라. 내가 세상을 이겼다." (요한 16,33)
+                </div>
               </div>
             </div>
-            <label class="toggle-switch">
-              <input type="checkbox" id="introBgmSwitch" onchange="if(window.rosaryApp){window.rosaryApp.setBgmEnabled(this.checked);}">
-              <span class="toggle-slider"></span>
-            </label>
-          </div>
-
-          <div id="introBgmDetailControls" style="display: flex; flex-direction: column; gap: 8px; margin-top: 10px;">
-            <div style="display: flex; gap: 6px; width: 100%;">
-              <button type="button" id="btnIntroBgmOrgan" class="action-pill-btn active" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('organ');">🎹 파이프 오르간</button>
-              <button type="button" id="btnIntroBgmChoir" class="action-pill-btn" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('choir');">🕊️ 수도원 성가</button>
-              <button type="button" id="btnIntroBgmBells" class="action-pill-btn" style="flex: 1; height: 38px; font-size: 0.78rem; font-weight: 700; cursor: pointer; pointer-events: auto !important; touch-action: manipulation !important;" onclick="directSelectBgmPreset('bells');">✨ 평화의 종소리</button>
-            </div>
-            <div style="display: flex; align-items: center; gap: 10px; padding: 4px 4px 0;">
-              <span style="font-size: 0.74rem; color: var(--text-muted); font-weight: 600;">음량 조절</span>
-              <input type="range" id="introBgmSlider" min="0.01" max="0.30" step="0.01" value="0.08" style="flex: 1; accent-color: var(--gold-primary); cursor: pointer; pointer-events: auto !important; touch-action: auto !important;" oninput="directChangeBgmVolume(parseFloat(this.value));">
-              <span id="introBgmVolLabel" style="font-size: 0.75rem; color: var(--gold-primary); font-weight: 700; width: 32px; text-align: right;">8%</span>
+            <div style="color: var(--gold-light); font-size: 0.8rem; font-weight: 700; white-space: nowrap; display: flex; align-items: center; gap: 2px;">
+              <span>기도하기</span>
+              <span>›</span>
             </div>
           </div>
         </div>
 
-        <!-- 2. 기도 종류 선택 카드 (묵주기도 vs 하느님 자비를 구하는 기도) -->
+        <!-- 1. 오늘의 가톨릭 전례력 배너 카드 -->
+        <div id="introLiturgicalBanner" class="liturgical-info-banner">
+          <div class="liturgical-info-main">
+            <span id="liturgicalDateText" class="liturgical-info-date">오늘의 가톨릭 전례력</span>
+            <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
+          </div>
+          <div style="display: flex; align-items: center; flex-shrink: 0;">
+            <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹]</span>
+          </div>
+        </div>
+
+        <!-- 2. 기도 종류 선택 카드 (성모 묵주기도 vs 하느님 자비의 기도) -->
         <div id="introPrayerTypeCard" class="intro-section-card prayer-type-card">
           <div class="intro-card-header">
             <span class="intro-card-icon">📿</span>
@@ -4449,56 +4556,11 @@ input:focus, textarea:focus {
           <div class="intro-toggle-group prayer-type-toggle">
             <button type="button" id="btnPrayerTypeRosary" class="intro-toggle-btn active">🌹 성모 묵주기도</button>
             <button type="button" id="btnPrayerTypeDivineMercy" class="intro-toggle-btn">🕊️ 자비의 기도</button>
-            </div>
-        </div>
-
-        <!-- 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
-        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">📿</span>
-            <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
-            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.2); color: var(--gold-light); font-size: 0.7rem; padding: 2px 7px;">분심 방지</span>
-          </div>
-          <p id="introPrayerModeSub" class="intro-card-desc">실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.</p>
-          <div class="intro-toggle-group">
-            <button type="button" id="btnIntroModePhysical" class="intro-toggle-btn active" style="flex: 1.2;">
-              <span>📿 실물 묵주 모드</span>
-              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 추천</small>
-            </button>
-            <button type="button" id="btnIntroModeDigital" class="intro-toggle-btn" style="flex: 1;">
-              <span>📱 터치 모드</span>
-              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩</small>
-            </button>
           </div>
         </div>
 
-        <!-- 3. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
-        <div id="introResumeCard" class="intro-section-card resume-card" style="display: none !important;">
-          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span class="intro-card-icon">🕊️</span>
-              <span id="introResumeTitle" class="intro-card-title">지난 기도 이어하기</span>
-            </div>
-            <button type="button" id="btnIntroDismissResume" title="이어하기 기록 삭제" style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; padding: 2px 6px;">✕ 기록 삭제</button>
-          </div>
-          <div class="intro-resume-detail">
-            <span id="introResumeMystery" class="resume-mystery-text">환희의 신비</span>
-            <span id="introResumeStep" class="resume-step-text">제1단 · 성모송 3/10</span>
-          </div>
-          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="directContinuePrayerAction();">
-            <span>🕊️</span>
-            <span id="introContinueText">이어서 계속 기도하기</span>
-          </button>
-        </div>
-
-        <!-- 4. 묵주기도 신비 선택 카드 (성모 묵주기도 모드) -->
-        <div id="introMysteryCard" class="intro-section-card">
-          <div class="intro-card-header">
-            <span class="intro-card-icon">✨</span>
-            <span id="introMysteryTitle" class="intro-card-title">묵주기도 신비 선택</span>
-            <span id="introTodayBadge" class="intro-today-badge">오늘의 신비</span>
-          </div>
-          
+        <!-- 3. 묵주기도 신비 선택 카드 (성모 묵주기도 선택 시 노출) -->
+        <div id="introMysteryCard" class="intro-section-card" style="border: 1.2px solid rgba(243, 198, 105, 0.45); background: linear-gradient(135deg, rgba(243, 198, 105, 0.08) 0%, rgba(22, 31, 51, 0.95) 100%);">
           <div class="intro-mystery-grid">
             <button type="button" class="mystery-select-card" data-mystery="joyful">
               <span class="mystery-icon">🌹</span>
@@ -4522,13 +4584,52 @@ input:focus, textarea:focus {
             </button>
           </div>
 
-          <div id="introMysteryDescBox" class="intro-mystery-desc-box">
+          <div id="introMysteryDescBox" class="intro-mystery-desc-box" style="margin-top: 8px;">
             <!-- 선택된 신비 요약 자동 반영 -->
           </div>
 
           <button type="button" id="btnOpenRosaryHistory" class="history-guide-trigger-btn">
             <span class="history-btn-icon">📖</span>
             <span id="txtOpenRosaryHistory">묵주기도의 유래와 약속된 은총 ❯</span>
+          </button>
+        </div>
+
+        <!-- 4. 기도 방식 선택 카드 (실물 묵주 모드 vs 터치 카운트 모드) -->
+        <div id="introPrayerModeCard" class="intro-section-card" style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.14) 0%, rgba(22, 31, 51, 0.85) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4);">
+          <div class="intro-card-header">
+            <span class="intro-card-icon">📿</span>
+            <span id="introPrayerModeTitle" class="intro-card-title">묵주기도 진행 방식</span>
+            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.2); color: var(--gold-light); font-size: 0.7rem; padding: 2px 7px;">분심 방지</span>
+          </div>
+          <p id="introPrayerModeSub" class="intro-card-desc">실물 묵주를 손에 쥐고 기도하실 때 추천합니다. 성모송을 매번 누르지 않고 묵주알에 온전히 집중할 수 있습니다.</p>
+          <div class="intro-toggle-group">
+            <button type="button" id="btnIntroModePhysical" class="intro-toggle-btn active" style="flex: 1.2;">
+              <span>📿 실물 묵주 있음</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 추천</small>
+            </button>
+            <button type="button" id="btnIntroModeDigital" class="intro-toggle-btn" style="flex: 1;">
+              <span>📱 묵주 없음 (터치)</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- 5. 지난 기도 이어하기 카드 (기록이 있을 때만 노출) -->
+        <div id="introResumeCard" class="intro-section-card resume-card" style="display: none;">
+          <div class="intro-card-header" style="display: flex; justify-content: space-between; align-items: center;">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span class="intro-card-icon">🕊️</span>
+              <span id="introResumeTitle" class="intro-card-title">지난 기도 이어하기</span>
+            </div>
+            <button type="button" id="btnIntroDismissResume" title="이어하기 기록 삭제" style="background: none; border: none; color: var(--text-muted); font-size: 0.75rem; cursor: pointer; padding: 2px 6px;">✕ 기록 삭제</button>
+          </div>
+          <div class="intro-resume-detail">
+            <span id="introResumeMystery" class="resume-mystery-text">환희의 신비</span>
+            <span id="introResumeStep" class="resume-step-text">제1단 · 성모송 3/10</span>
+          </div>
+          <button type="button" id="btnIntroContinue" class="intro-cta-btn resume" onclick="directContinuePrayerAction();">
+            <span>🕊️</span>
+            <span id="introContinueText">이어서 계속 기도하기</span>
           </button>
         </div>
 
@@ -4607,51 +4708,8 @@ input:focus, textarea:focus {
         </div>
 
         <!-- ==============================================
-             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             [NEW] 함께 바치는 교우들의 지향 영역
              ============================================== -->
-        <div id="introCommunityCard" class="intro-section-card community-stats-card">
-          <div class="community-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
-            <div style="display: flex; align-items: center; gap: 6px;">
-              <span style="font-size: 1rem;">🌹</span>
-              <span id="commHeaderCardTitle" style="font-size: 0.88rem; font-weight: 700; color: #FFF; letter-spacing: -0.2px;">성모 묵주기도 봉헌 현황</span>
-            </div>
-            <span class="intro-today-badge" style="background: rgba(243, 198, 105, 0.16); color: var(--gold-light); font-size: 0.72rem; padding: 2px 7px;">묵주 5단</span>
-          </div>
-          <div class="community-card-top">
-            <div class="community-name-badge">
-              <span class="comm-pin-icon">📍</span>
-              <span id="commCurrentName" class="comm-name-text">전국 교우 공동체</span>
-            </div>
-            <button type="button" id="btnOpenCommModal" class="comm-change-btn">
-              <span>PIN / 단체 변경 ❯</span>
-            </button>
-          </div>
-
-          <div class="community-stats-grid">
-            <div class="comm-stat-box comm-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🕊️</span>
-                <span>공동체 함께 봉헌</span>
-              </div>
-              <div id="commTotalDecades" class="comm-stat-value">178단</div>
-              <div id="commTotalRoses" class="comm-stat-sub">(장미 1780송이 🌹)</div>
-            </div>
-
-            <div class="comm-stat-box my-total">
-              <div class="comm-stat-label">
-                <span class="comm-stat-dot">🌹</span>
-                <span>내가 봉헌한 기도</span>
-              </div>
-              <div id="myTotalDecades" class="comm-stat-value">50단</div>
-              <div id="myTotalRoses" class="comm-stat-sub">(500송이 🌹)</div>
-            </div>
-          </div>
-        </div>
-
-        
-
-        
-        <!-- [NEW] 함께 바치는 교우들의 지향 영역 -->
         <!-- A. 등록된 지향이 있을 때: 풍성한 카드 노출 -->
         <div id="introIntentionCard" class="intro-section-card intention-card" style="display: none; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
@@ -4839,8 +4897,8 @@ input:focus, textarea:focus {
             <div id="prayerContentSection" class="prayer-content-section"></div>
           </div>
 
-          <!-- 하단 드래그 안내 힌트 -->
-          <div class="drag-hint-overlay">
+          <!-- 하단 드래그 안내 힌트 (깔끔한 화면과 버튼 우선 조작을 위해 숨김) -->
+          <div class="drag-hint-overlay" style="display: none;">
             <span>◂ 화면을 좌우로 드래그하여 한 알씩 넘기세요 ▸</span>
           </div>
 
@@ -5205,6 +5263,46 @@ input:focus, textarea:focus {
           </div>
         </div>
 
+        <!-- ==============================================
+             [NEW] 은총의 묵주기도 봉헌 현황 (공동체 & 나의 단수)
+             ============================================== -->
+        <div id="trackerCommunityBox" class="community-stats-card" style="margin-top: 14px; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 12px 14px;">
+          <div class="community-card-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid rgba(255,255,255,0.08);">
+            <div style="display: flex; align-items: center; gap: 6px;">
+              <span style="font-size: 1rem;">🌹</span>
+              <span id="commHeaderCardTitle" style="font-size: 0.86rem; font-weight: 700; color: #FFF; letter-spacing: -0.2px;">묵주기도 전체 봉헌 현황</span>
+            </div>
+            <div class="community-name-badge" style="background: rgba(243, 198, 105, 0.12); padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(243, 198, 105, 0.3);">
+              <span class="comm-pin-icon" style="font-size: 0.75rem;">📍</span>
+              <span id="commCurrentName" class="comm-name-text" style="font-size: 0.74rem; font-weight: 700; color: var(--gold-light);">전국 교우 공동체</span>
+            </div>
+          </div>
+
+          <div class="community-stats-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 8px;">
+            <div class="comm-stat-box comm-total" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px; text-align: center;">
+              <div class="comm-stat-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">
+                <span>🕊️ 공동체 함께 봉헌</span>
+              </div>
+              <div id="commTotalDecades" class="comm-stat-value" style="font-size: 1.1rem; font-weight: 800; color: var(--gold-primary);">178단</div>
+              <div id="commTotalRoses" class="comm-stat-sub" style="font-size: 0.68rem; color: var(--text-muted);">(장미 1780송이 🌹)</div>
+            </div>
+
+            <div class="comm-stat-box my-total" style="background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 8px; padding: 8px; text-align: center;">
+              <div class="comm-stat-label" style="font-size: 0.7rem; color: var(--text-muted); margin-bottom: 2px;">
+                <span>🌹 내가 봉헌한 누적</span>
+              </div>
+              <div id="myTotalDecades" class="comm-stat-value" style="font-size: 1.1rem; font-weight: 800; color: #FFF;">50단</div>
+              <div id="myTotalRoses" class="comm-stat-sub" style="font-size: 0.68rem; color: var(--text-muted);">(500송이 🌹)</div>
+            </div>
+          </div>
+
+          <div style="text-align: right;">
+            <button type="button" id="btnOpenCommModal" class="comm-change-btn" style="background: none; border: 1px solid rgba(243, 198, 105, 0.3); color: var(--gold-light); font-size: 0.72rem; padding: 3px 8px; border-radius: 8px; cursor: pointer;">
+              <span>PIN / 단체 변경 ❯</span>
+            </button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -5562,6 +5660,77 @@ input:focus, textarea:focus {
           <button type="button" id="btnDismissCondolenceModal" class="action-pill-btn gold" style="width: 100%; margin-top: 14px; height: 42px;">
             확인
           </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- [NEW] 2027 서울 세계청년대회(WYD Seoul 2027) 공식 기도문 모달 -->
+    <div id="wydModal" class="modal-backdrop">
+      <div class="bottom-sheet" style="max-width: 440px; max-height: 88vh; display: flex; flex-direction: column;">
+        <div class="sheet-handle"></div>
+        <div class="sheet-title" style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+          <span>🕊️</span> <span>2027 서울 세계청년대회 공식 기도문</span>
+        </div>
+
+        <div style="overflow-y: auto; padding: 10px 6px 16px; -webkit-overflow-scrolling: touch;">
+          <!-- 주제 성구 및 대회 안내 배너 -->
+          <div style="background: linear-gradient(135deg, rgba(243, 198, 105, 0.16) 0%, rgba(59, 130, 246, 0.16) 100%); border: 1.2px solid rgba(243, 198, 105, 0.4); border-radius: var(--radius-md); padding: 14px; text-align: center; margin-bottom: 14px;">
+            <div style="font-size: 0.74rem; font-weight: 800; color: var(--gold-light); letter-spacing: 0.5px; margin-bottom: 4px;">WYD SEOUL 2027</div>
+            <div style="font-size: 1.02rem; font-weight: 800; color: #FFF; line-height: 1.4; margin-bottom: 4px;">
+              "용기를 내어라. 내가 세상을 이겼다."
+            </div>
+            <div style="font-size: 0.76rem; color: var(--text-muted);">(요한 16,33)</div>
+          </div>
+
+          <!-- 기도문 본문 -->
+          <div style="background: rgba(15, 23, 42, 0.65); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: var(--radius-md); padding: 16px 14px; line-height: 1.85; font-size: 0.96rem; color: #F8FAFC; word-break: keep-all; font-family: var(--font-base);">
+            <p style="margin-bottom: 12px;">
+              젊은이를 사랑하시는 주님,<br>
+              저희를 주님의 무한한 사랑과 자비로 초대해 주심에 감사드립니다.
+            </p>
+            <p style="margin-bottom: 12px;">
+              하느님 아버지,<br>
+              저희 자신을 당신께 맡겨 드리오니,<br>
+              온 세상 젊은이들이 교회의 품 안에서 위로받고<br>
+              친교와 일치의 기쁨을 누리게 하소서.
+            </p>
+            <p style="margin-bottom: 12px;">
+              ‘이미 그리고 영원히’ 세상을 이기신 그리스도님,<br>
+              “용기를 내어라.” 하신 당신의 말씀 안에서<br>
+              온 세상 모든 이가 희망을 발견하고,<br>
+              사랑과 용서의 십자가가 세상에 대한 승리임을 깨닫게 하소서.
+            </p>
+            <p style="margin-bottom: 12px;">
+              사랑의 불꽃이신 성령님,<br>
+              당신의 놀라운 손길로 이 땅에 복음의 씨앗을 심으셨으니,<br>
+              한국 순교 성인들의 믿음이 저희 가슴에도 타올라<br>
+              평화와 사랑과 진리의 복음을 살아가는 제자가 되게 하소서.
+            </p>
+            <p style="margin-bottom: 12px;">
+              주님, 이 세계청년대회의 순례 여정을 통해<br>
+              저희 모두가 서로의 목소리를 경청하고 그 안에서 당신의 뜻을 찾으며,<br>
+              모든 하느님 백성이 함께 걷는 시노드 교회가 되게 하소서.<br><br>
+              <strong>아멘.</strong>
+            </p>
+            <div style="margin-top: 14px; padding-top: 12px; border-top: 1px dashed rgba(243, 198, 105, 0.3); font-size: 0.88rem; color: var(--gold-light); line-height: 1.7;">
+              ○ 자비와 평화의 모후이시여,<br>
+              ◎ 저희를 위하여 빌어 주소서.<br>
+              ○ 서울 세계청년대회의 주보성인들이여,<br>
+              ◎ 모든 젊은이들을 위하여 빌어 주소서.
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 8px; margin-top: 14px;">
+            <button type="button" id="btnCopyWydPrayer" class="action-pill-btn" onclick="copyWydPrayerText();" style="flex: 1; height: 42px; font-size: 0.84rem;">
+              📋 기도문 복사
+            </button>
+            <button type="button" id="btnDismissWydModal" class="action-pill-btn gold" onclick="closeWydModal();" style="flex: 1.2; height: 42px; font-size: 0.88rem; font-weight: 800;">
+              🕊️ 함께 기도하기 (닫기)
+            </button>
+          </div>
+          <div id="wydCopyFeedback" style="display: none; text-align: center; font-size: 0.76rem; color: #4ADE80; font-weight: 700; margin-top: 8px;">
+            ✓ 2027 세계청년대회 기도문이 복사되었습니다.
+          </div>
         </div>
       </div>
     </div>
@@ -7022,11 +7191,16 @@ class RosaryApp {
       btnIntroContinue: document.getElementById("btnIntroContinue"),
       introContinueText: document.getElementById("introContinueText"),
 
-      // 인트로 4. 신비 선택
+      // 인트로 4. 신비 선택 & 전례력
       introMysteryCard: document.getElementById("introMysteryCard"),
       introMysteryTitle: document.getElementById("introMysteryTitle"),
       introTodayBadge: document.getElementById("introTodayBadge"),
       introMysteryDescBox: document.getElementById("introMysteryDescBox"),
+      introLiturgicalBanner: document.getElementById("introLiturgicalBanner"),
+      liturgicalDateText: document.getElementById("liturgicalDateText"),
+      liturgicalDayName: document.getElementById("liturgicalDayName"),
+      liturgicalColorBadge: document.getElementById("liturgicalColorBadge"),
+      liturgicalRecMysteryCallout: document.getElementById("liturgicalRecMysteryCallout"),
 
       // 인트로 5. 하느님 자비의 기도 안내
       introDivineMercyCard: document.getElementById("introDivineMercyCard"),
@@ -7321,10 +7495,7 @@ class RosaryApp {
     if (this.dom.introDivineMercyCard) {
       this.dom.introDivineMercyCard.style.display = isDm ? "block" : "none";
     }
-    // [Option 1] 성모 묵주기도 모드일 때만 묵주기도 봉헌 현황(공동체 & 장미) 및 주간 장미 기록 카드 노출
-    if (this.dom.introCommunityCard) {
-      this.dom.introCommunityCard.style.display = isDm ? "none" : "block";
-    }
+    // [Option 1] 성모 묵주기도 모드일 때만 주간 장미 기록 카드 노출
     if (this.dom.introTrackerMiniCard) {
       this.dom.introTrackerMiniCard.style.display = isDm ? "none" : "flex";
     }
@@ -8426,6 +8597,194 @@ showCrucifixKissOverlay(onComplete) {
     }
   }
 
+  // 가톨릭 전례력 (Liturgical Calendar) 계산 엔진
+  getLiturgicalInfo(date = new Date()) {
+    const isEn = this.settings.lang === "en";
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1; // 1-12
+    const day = date.getDate();
+    const wday = date.getDay(); // 0: Sun, 1: Mon, ...
+    const curDateOnly = new Date(year, date.getMonth(), day);
+
+    // 부활 대축일 계산 (Anonymous Gregorian algorithm)
+    const getEaster = (y) => {
+      const a = y % 19;
+      const b = Math.floor(y / 100);
+      const c = y % 100;
+      const d = Math.floor(b / 4);
+      const e = b % 4;
+      const f = Math.floor((b + 8) / 25);
+      const g = Math.floor((b - f + 1) / 3);
+      const h = (19 * a + b - d - g + 15) % 30;
+      const i = Math.floor(c / 4);
+      const k = c % 4;
+      const l = (32 + 2 * e + 2 * i - h - k) % 7;
+      const m = Math.floor((a + 11 * h + 22 * l) / 451);
+      const mon = Math.floor((h + l - 7 * m + 114) / 31);
+      const dy = ((h + l - 7 * m + 114) % 31) + 1;
+      return new Date(y, mon - 1, dy);
+    };
+
+    // 대림 제1주일 (11월 27일~12월 3일 사이의 주일)
+    const getAdvent1 = (y) => {
+      const d = new Date(y, 10, 27); // Nov 27
+      while (d.getDay() !== 0) {
+        d.setDate(d.getDate() + 1);
+      }
+      return d;
+    };
+
+    const addDays = (d, n) => {
+      const res = new Date(d);
+      res.setDate(res.getDate() + n);
+      return res;
+    };
+
+    const isSameDay = (d1, d2) => {
+      return d1.getFullYear() === d2.getFullYear() &&
+             d1.getMonth() === d2.getMonth() &&
+             d1.getDate() === d2.getDate();
+    };
+
+    const easter = getEaster(year);
+    const advent = getAdvent1(year);
+
+    // 1. 주요 고정 대축일 및 축일
+    const fixedFeastsKo = {
+      "1-1": { color: "white", colorKo: "백", name: "천주의 성모 마리아 대축일", rank: "대축일" },
+      "1-6": { color: "white", colorKo: "백", name: "주님 공현 대축일", rank: "대축일" },
+      "2-2": { color: "white", colorKo: "백", name: "주님 봉헌 축일", rank: "축일" },
+      "3-19": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 배필 성 요셉 대축일", rank: "대축일" },
+      "3-25": { color: "white", colorKo: "백", name: "주님 탄생 예고(성모영보) 대축일", rank: "대축일" },
+      "5-1": { color: "white", colorKo: "백", name: "노동자 성 요셉 기념일", rank: "기념일" },
+      "5-31": { color: "white", colorKo: "백", name: "복되신 동정 마리아의 방문 축일", rank: "축일" },
+      "6-24": { color: "white", colorKo: "백", name: "세례자 성 요한 탄생 대축일", rank: "대축일" },
+      "6-29": { color: "red", colorKo: "홍", name: "성 베드로와 성 바오로 사도 대축일", rank: "대축일" },
+      "7-3": { color: "red", colorKo: "홍", name: "성 토마스 사도 축일", rank: "축일" },
+      "7-22": { color: "white", colorKo: "백", name: "성녀 마리아 막달레나 축일", rank: "축일" },
+      "7-25": { color: "red", colorKo: "홍", name: "성 야고보 사도 축일", rank: "축일" },
+      "8-6": { color: "white", colorKo: "백", name: "주님의 거룩한 변모 축일", rank: "축일" },
+      "8-10": { color: "red", colorKo: "홍", name: "성 라우렌시오 부제 순교자 축일", rank: "축일" },
+      "8-15": { color: "white", colorKo: "백", name: "성모 승천 대축일", rank: "대축일" },
+      "8-24": { color: "red", colorKo: "홍", name: "성 바르톨로메오 사도 축일", rank: "축일" },
+      "9-8": { color: "white", colorKo: "백", name: "복되신 동정 마리아 탄생 축일", rank: "축일" },
+      "9-14": { color: "red", colorKo: "홍", name: "성 십자가 현양 축일", rank: "축일" },
+      "9-20": { color: "red", colorKo: "홍", name: "성 김대건 안드레아와 성 정하상 바오로와 동료 순교자들 대축일", rank: "대축일" },
+      "9-21": { color: "red", colorKo: "홍", name: "성 마태오 사도 복음사가 축일", rank: "축일" },
+      "9-29": { color: "white", colorKo: "백", name: "성 미카엘, 성 가브리엘, 성 라파엘 대천사 축일", rank: "축일" },
+      "10-18": { color: "red", colorKo: "홍", name: "성 루카 복음사가 축일", rank: "축일" },
+      "10-28": { color: "red", colorKo: "홍", name: "성 시몬과 성 유다 사도 축일", rank: "축일" },
+      "11-1": { color: "white", colorKo: "백", name: "모든 성인 대축일", rank: "대축일" },
+      "11-2": { color: "violet", colorKo: "자", name: "위령의 날", rank: "위령" },
+      "11-9": { color: "white", colorKo: "백", name: "라테라노 대성전 봉헌 축일", rank: "축일" },
+      "11-30": { color: "red", colorKo: "홍", name: "성 안드레아 사도 축일", rank: "축일" },
+      "12-8": { color: "white", colorKo: "백", name: "원죄 없이 잉태되신 동정 마리아 대축일", rank: "대축일" },
+      "12-25": { color: "white", colorKo: "백", name: "예수 성탄 대축일", rank: "대축일" },
+      "12-26": { color: "red", colorKo: "홍", name: "성 스테파노 첫 순교자 축일", rank: "축일" },
+      "12-27": { color: "white", colorKo: "백", name: "성 요한 사도 복음사가 축일", rank: "축일" },
+      "12-28": { color: "red", colorKo: "홍", name: "죄 없는 아기 순교자들 축일", rank: "축일" }
+    };
+
+    const fixedKey = `${month}-${day}`;
+    if (fixedFeastsKo[fixedKey]) {
+      const f = fixedFeastsKo[fixedKey];
+      return {
+        color: f.color,
+        colorKo: f.colorKo,
+        title: f.name,
+        badgeText: `[${f.colorKo}]`
+      };
+    }
+
+    // 2. 이동 대축일 및 전례 시기 판별
+    const ashWed = addDays(easter, -46);
+    const palmSun = addDays(easter, -7);
+    const holyThurs = addDays(easter, -3);
+    const goodFri = addDays(easter, -2);
+    const holySat = addDays(easter, -1);
+    const pentecost = addDays(easter, 49);
+    const trinity = addDays(easter, 56);
+    const corpusChristi = addDays(easter, 63);
+    const sacredHeart = addDays(easter, 68);
+    const christKing = addDays(advent, -7);
+
+    if (isSameDay(curDateOnly, ashWed)) return { color: "violet", colorKo: "자", title: "재의 수요일", badgeText: "[자]" };
+    if (isSameDay(curDateOnly, palmSun)) return { color: "red", colorKo: "홍", title: "주님 수난 성지 주일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, holyThurs)) return { color: "white", colorKo: "백", title: "주님 만찬 성목요일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, goodFri)) return { color: "red", colorKo: "홍", title: "주님 수난 성금요일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, holySat)) return { color: "white", colorKo: "백", title: "성토요일 (부활 성야)", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, easter)) return { color: "white", colorKo: "백", title: "주님 부활 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, addDays(easter, 7))) return { color: "white", colorKo: "백", title: "하느님의 자비 주일 (부활 제2주일)", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, pentecost)) return { color: "red", colorKo: "홍", title: "성령 강림 대축일", badgeText: "[홍]" };
+    if (isSameDay(curDateOnly, trinity)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 삼위일체 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, corpusChristi)) return { color: "white", colorKo: "백", title: "그리스도의 성체 성혈 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, sacredHeart)) return { color: "white", colorKo: "백", title: "지극히 거룩하신 예수 성심 대축일", badgeText: "[백]" };
+    if (isSameDay(curDateOnly, christKing)) return { color: "white", colorKo: "백", title: "그리스도 왕 대축일 (연중 제34주일)", badgeText: "[백]" };
+
+    const dayKoList = ["주일", "월요일", "화요일", "수요일", "목요일", "금요일", "토요일"];
+    const wdayName = dayKoList[wday];
+
+    // 3. 대림 시기 (Advent)
+    const christmas = new Date(year, 11, 25);
+    if (curDateOnly >= advent && curDateOnly < christmas) {
+      const week = Math.floor((curDateOnly - advent) / (7 * 86400000)) + 1;
+      const isRose = (week === 3 && wday === 0);
+      const col = isRose ? "rose" : "violet";
+      const colKo = isRose ? "장" : "자";
+      const t = `대림 제${week}주간 ${wdayName}`;
+      return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}]` };
+    }
+
+    // 4. 성탄 시기 (Christmas Time: 12/25 ~ 1월 12일경 주님 세례 축일)
+    if (curDateOnly >= christmas || (month === 1 && day <= 12)) {
+      if (month === 1 && day >= 7 && wday === 0) {
+        return { color: "white", colorKo: "백", title: "주님 세례 축일", badgeText: "[백]" };
+      }
+      return { color: "white", colorKo: "백", title: `성탄 시기 (${month}월 ${day}일)`, badgeText: `[백]` };
+    }
+
+    // 5. 사순 시기 (Lent)
+    if (curDateOnly > ashWed && curDateOnly < easter) {
+      const firstSunLent = addDays(ashWed, 4);
+      if (curDateOnly < firstSunLent) {
+        const t = `사순 전 평일 ${wdayName}`;
+        return { color: "violet", colorKo: "자", title: t, badgeText: `[자]` };
+      } else {
+        const week = Math.floor((curDateOnly - firstSunLent) / (7 * 86400000)) + 1;
+        const isRose = (week === 4 && wday === 0);
+        const col = isRose ? "rose" : "violet";
+        const colKo = isRose ? "장" : "자";
+        const t = `사순 제${week}주간 ${wdayName}`;
+        return { color: col, colorKo: colKo, title: t, badgeText: `[${colKo}]` };
+      }
+    }
+
+    // 6. 부활 시기 (Easter Season)
+    if (curDateOnly > easter && curDateOnly < pentecost) {
+      const week = Math.floor((curDateOnly - easter) / (7 * 86400000)) + 1;
+      const t = `부활 제${week}주간 ${wdayName}`;
+      return { color: "white", colorKo: "백", title: t, badgeText: `[백]` };
+    }
+
+    // 7. 연중 시기 (Ordinary Time)
+    if (curDateOnly < ashWed) {
+      const jan7 = new Date(year, 0, 7);
+      const week = Math.max(1, Math.floor((curDateOnly - jan7) / (7 * 86400000)) + 1);
+      const t = `연중 제${week}주간 ${wdayName}`;
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹]` };
+    } else {
+      // 그리스도 왕 대축일(연중 34주일) 기준으로 주간 역산
+      const diffToSunday = wday; // 일요일부터 지난 일수
+      const prevSunday = addDays(curDateOnly, -diffToSunday);
+      const weeksBeforeKing = Math.round((christKing - prevSunday) / (7 * 86400000));
+      let weekNum = 34 - weeksBeforeKing;
+      if (weekNum < 1) weekNum = 1;
+      if (weekNum > 34) weekNum = 34;
+      const t = `연중 제${weekNum}주간 ${wdayName}`;
+      return { color: "green", colorKo: "녹", title: t, badgeText: `[녹]` };
+    }
+  }
+
   updateIntroView() {
     this.renderCommunityStats();
     const isEn = this.settings.lang === "en";
@@ -8443,11 +8802,45 @@ showCrucifixKissOverlay(onComplete) {
       }
     }
 
+    if (this.dom.introMysteryTitle) {
+      const daysShortKo = ["일", "월", "화", "수", "목", "금", "토"];
+      const daysShortEn = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      if (isEn) {
+        this.dom.introMysteryTitle.textContent = `${monthsEn[now.getMonth()]} ${now.getDate()} (${daysShortEn[now.getDay()]}) Today's Mystery`;
+      } else {
+        this.dom.introMysteryTitle.textContent = `${monthsKo[now.getMonth()]} ${now.getDate()}일(${daysShortKo[now.getDay()]}) 오늘의 신비`;
+      }
+    }
+
+    // 0. 가톨릭 전례력 안내 배너 갱신
+    try {
+      const litInfo = this.getLiturgicalInfo(now);
+      if (this.dom.introLiturgicalBanner) {
+        this.dom.introLiturgicalBanner.className = `liturgical-info-banner theme-${litInfo.color}`;
+      }
+      if (this.dom.liturgicalDateText) {
+        if (isEn) {
+          this.dom.liturgicalDateText.textContent = `${monthsEn[now.getMonth()]} ${now.getDate()}, ${now.getFullYear()}`;
+        } else {
+          this.dom.liturgicalDateText.textContent = `${now.getFullYear()}년 ${monthsKo[now.getMonth()]} ${now.getDate()}일`;
+        }
+      }
+      if (this.dom.liturgicalDayName) {
+        this.dom.liturgicalDayName.textContent = litInfo.title;
+      }
+      if (this.dom.liturgicalColorBadge) {
+        this.dom.liturgicalColorBadge.textContent = litInfo.badgeText;
+        this.dom.liturgicalColorBadge.className = `liturgical-badge color-${litInfo.color}`;
+      }
+    } catch (e) {
+      console.warn("Liturgical update error:", e);
+    }
+
     // 1. 지난 기도 이어하기 카드 상태 업데이트
     const saved = this.loadSavedProgress();
     if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
       if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "none";
+        this.dom.introResumeCard.style.display = "flex";
       }
       if (saved.prayerType === "divine_mercy") {
         if (this.dom.introResumeMystery) {
@@ -8614,9 +9007,7 @@ showCrucifixKissOverlay(onComplete) {
     if (this.dom.introContinueText) {
       this.dom.introContinueText.textContent = isEn ? "Continue Praying" : "이어서 계속 기도하기";
     }
-    if (this.dom.introMysteryTitle) {
-      this.dom.introMysteryTitle.textContent = isEn ? "Select Mystery" : "묵주기도 신비 선택";
-    }
+    this.updateIntroView();
     if (this.dom.introTodayBadge) {
       this.dom.introTodayBadge.textContent = isEn ? "Today" : "오늘의 신비";
     }
@@ -10086,9 +10477,14 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.prayerMainTitle) this.dom.prayerMainTitle.style.display = 'none';
       if (this.dom.prayerGuideText) this.dom.prayerGuideText.style.display = 'none';
     } else {
+      // 상단 신비 묵상 박스(meditationBox)가 이미 제목을 크고 선명하게 보여주므로 중복 제거
       if (this.dom.prayerMainTitle) {
-        this.dom.prayerMainTitle.style.display = 'block';
-        this.dom.prayerMainTitle.textContent = step.title;
+        if (step.beadType === "large" && step.meditation) {
+          this.dom.prayerMainTitle.style.display = 'none';
+        } else {
+          this.dom.prayerMainTitle.style.display = 'block';
+          this.dom.prayerMainTitle.textContent = step.title;
+        }
       }
       if (this.dom.prayerGuideText) {
         this.dom.prayerGuideText.style.display = 'block';
@@ -12745,6 +13141,92 @@ function directPrevStep() {
       window.rosaryApp.prevStep();
     }
   } catch(e) { console.error(e); }
+}
+
+function openWydModal() {
+  try {
+    var modal = document.getElementById("wydModal");
+    if (modal) {
+      modal.classList.add("show");
+      modal.style.setProperty("display", "flex", "important");
+      modal.style.setProperty("z-index", "1200", "important");
+    }
+  } catch(e) {
+    console.error("openWydModal error:", e);
+  }
+}
+
+function closeWydModal() {
+  try {
+    var modal = document.getElementById("wydModal");
+    if (modal) {
+      modal.classList.remove("show");
+      modal.style.setProperty("display", "none", "important");
+    }
+  } catch(e) {
+    console.error("closeWydModal error:", e);
+  }
+}
+
+function copyWydPrayerText() {
+  var prayerText = "【2027 서울 세계청년대회(WYD Seoul 2027) 공식 기도문】\n\n" +
+    "\"용기를 내어라. 내가 세상을 이겼다.\" (요한 16,33)\n\n" +
+    "젊은이를 사랑하시는 주님,\n" +
+    "저희를 주님의 무한한 사랑과 자비로 초대해 주심에 감사드립니다.\n\n" +
+    "하느님 아버지,\n" +
+    "저희 자신을 당신께 맡겨 드리오니,\n" +
+    "온 세상 젊은이들이 교회의 품 안에서 위로받고\n" +
+    "친교와 일치의 기쁨을 누리게 하소서.\n\n" +
+    "‘이미 그리고 영원히’ 세상을 이기신 그리스도님,\n" +
+    "“용기를 내어라.” 하신 당신의 말씀 안에서\n" +
+    "온 세상 모든 이가 희망을 발견하고,\n" +
+    "사랑과 용서의 십자가가 세상에 대한 승리임을 깨닫게 하소서.\n\n" +
+    "사랑의 불꽃이신 성령님,\n" +
+    "당신의 놀라운 손길로 이 땅에 복음의 씨앗을 심으셨으니,\n" +
+    "한국 순교 성인들의 믿음이 저희 가슴에도 타올라\n" +
+    "평화와 사랑과 진리의 복음을 살아가는 제자가 되게 하소서.\n\n" +
+    "주님, 이 세계청년대회의 순례 여정을 통해\n" +
+    "저희 모두가 서로의 목소리를 경청하고 그 안에서 당신의 뜻을 찾으며,\n" +
+    "모든 하느님 백성이 함께 걷는 시노드 교회가 되게 하소서.\n\n" +
+    "아멘.\n\n" +
+    "○ 자비와 평화의 모후이시여,\n" +
+    "◎ 저희를 위하여 빌어 주소서.\n" +
+    "○ 서울 세계청년대회의 주보성인들이여,\n" +
+    "◎ 모든 젊은이들을 위하여 빌어 주소서.";
+
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(prayerText).then(showWydCopyFeedback).catch(function() {
+      fallbackCopy(prayerText);
+    });
+  } else {
+    fallbackCopy(prayerText);
+  }
+
+  function fallbackCopy(text) {
+    var ta = document.createElement("textarea");
+    ta.value = text;
+    ta.style.position = "fixed";
+    ta.style.opacity = "0";
+    document.body.appendChild(ta);
+    ta.select();
+    try {
+      document.execCommand("copy");
+      showWydCopyFeedback();
+    } catch(err) {
+      alert("기도문 복사에 실패했습니다. 직접 복사해주세요.");
+    }
+    document.body.removeChild(ta);
+  }
+
+  function showWydCopyFeedback() {
+    var fb = document.getElementById("wydCopyFeedback");
+    if (fb) {
+      fb.style.display = "block";
+      setTimeout(function() {
+        fb.style.display = "none";
+      }, 2500);
+    }
+  }
 }
 
 function directGoHome() {
