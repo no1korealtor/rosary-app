@@ -399,10 +399,10 @@
         </div>
 
         <!-- ==============================================
-             [NEW] 함께 바치는 교우들의 지향 영역
+             [NEW] 함께 바치는 교우들의 지향 영역 (Intro 바닥에서 숨김 -> 묵주/지향 준비 모달로 완전 이전)
              ============================================== -->
         <!-- A. 등록된 지향이 있을 때: 풍성한 카드 노출 -->
-        <div id="introIntentionCard" class="intro-section-card intention-card" style="display: none; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
+        <div id="introIntentionCard" class="intro-section-card intention-card" style="display: none !important; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(243, 198, 105, 0.25); border-radius: var(--radius-md); padding: 14px 16px; margin-bottom: 12px; box-shadow: 0 4px 14px rgba(0,0,0,0.25);">
           <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <div style="display: flex; align-items: center; gap: 6px;">
               <span style="font-size: 1.05rem;">🕊️</span>
@@ -434,7 +434,7 @@
         </div>
 
         <!-- B. 등록된 지향이 없을 때: 단정하고 거슬리지 않는 한 줄 링크 (지향 올리기 항상 가능) -->
-        <div id="introIntentionEmptyPrompt" style="display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.35); border: 1px dashed rgba(243, 198, 105, 0.2); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px;">
+        <div id="introIntentionEmptyPrompt" style="display: none !important; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.35); border: 1px dashed rgba(243, 198, 105, 0.2); border-radius: var(--radius-md); padding: 10px 14px; margin-bottom: 12px;">
           <span style="font-size: 0.78rem; color: var(--text-secondary); display: flex; align-items: center; gap: 6px;">
             <span>🕊️</span>
             <span>성모님과 교우들에게 청할 지향이 있으신가요?</span>
@@ -8586,19 +8586,9 @@ window.addEventListener('DOMContentLoaded', () => {
   function renderIntentionCard() {
     const card = document.getElementById('introIntentionCard');
     const emptyPrompt = document.getElementById('introIntentionEmptyPrompt');
-    if (!card || !emptyPrompt) return;
-
-    const list = getStoredList();
-    const data = getCurrentIntention();
-
-    if (!data || !data.text || !data.active) {
-      card.style.display = 'none';
-      emptyPrompt.style.display = 'flex';
-      return;
-    }
-
-    card.style.display = 'block';
-    emptyPrompt.style.display = 'none';
+    if (card) card.style.display = 'none';
+    if (emptyPrompt) emptyPrompt.style.display = 'none';
+    return;
 
     const bodyEl = document.getElementById('intentionBodyText');
     const countEl = document.getElementById('intentionCountNum');
