@@ -1,0 +1,2068 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>통합 장부 (매물/손님)</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/css/tom-select.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/tom-select@2.2.2/dist/js/tom-select.complete.min.js"></script>
+    <link rel="stylesheet" href="nav.css">
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+        .ts-control input { min-width: 150px !important; }
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f8fafc;
+            padding: 24px 16px;
+            max-width: 480px;
+            margin: auto;
+            color: #0f172a;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding-bottom: 80px;
+        }
+        .main-content { flex: 1; }
+        h2 { font-size: 22px; font-weight: 900; color: #0f172a; letter-spacing: -0.5px; }
+        
+        .tab-btn {
+            flex: 1; padding: 12px; border-radius: 10px; border: none; background: transparent; color: #94a3b8; font-weight: 800; font-size: 15px; cursor: pointer; transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .tab-btn.active-prop { background: #3b82f6; color: white; box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3); }
+        .tab-btn.active-client { background: #10b981; color: white; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3); }
+        
+        .card {
+            background: white; border-radius: 16px; padding: 16px; margin-bottom: 16px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+            border: 1px solid #f1f5f9;
+        }
+        
+        .btn-primary {
+            background: #3b82f6; color: white; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 15px; width: 100%; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .chip {
+            display: inline-flex; align-items: center; padding: 4px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; margin-right: 4px; margin-bottom: 4px;
+        }
+        .chip.sale { background: #dbeafe; color: #1d4ed8; }
+        .chip.jeonse { background: #dcfce7; color: #15803d; }
+        .chip.wolse { background: #fef3c7; color: #b45309; }
+        .chip.neutral { background: #f1f5f9; color: #475569; }
+
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.5); display: none; justify-content: center; align-items: flex-end; z-index: 2000;
+        }
+        .modal-content {
+            background: white; width: 100%; max-width: 480px; border-radius: 24px 24px 0 0; max-height: 90vh; display: flex; flex-direction: column; box-shadow: 0 -4px 20px rgba(0,0,0,0.1); animation: slideUp 0.3s ease-out;
+        }
+        .modal-header {
+            padding: 20px 24px; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;
+        }
+        .modal-body {
+            padding: 24px; overflow-y: auto; flex: 1;
+        }
+        .modal-footer {
+            padding: 16px 24px; border-top: 1px solid #f1f5f9; flex-shrink: 0; background: white; padding-bottom: calc(16px + env(safe-area-inset-bottom));
+        }
+        @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+        .form-group { margin-bottom: 16px; }
+        .form-label { display: block; font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px; }
+        .form-input { width: 100%; padding: 12px; border: 1px solid #cbd5e1; border-radius: 10px; font-size: 15px; background: #f8fafc; outline: none; box-sizing: border-box; }
+        .form-input:focus { border-color: #3b82f6; background: white; box-shadow: 0 0 0 3px rgba(59,130,246,0.1); }
+        
+        .checkbox-group { display: flex; gap: 8px; flex-wrap: wrap; }
+        .checkbox-label {
+            display: flex; align-items: center; gap: 6px; padding: 10px 14px; background: #f1f5f9; border-radius: 10px; font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; border: 1px solid transparent; transition: 0.2s;
+        }
+        .checkbox-label input[type="checkbox"] { display: none; }
+        .checkbox-label:has(input:checked) { background: #eff6ff; color: #2563eb; border-color: #bfdbfe; }
+        
+        .matching-section {
+            margin-top: 12px; padding-top: 12px; border-top: 1px dashed #e2e8f0;
+        }
+
+        .filter-btn {
+            padding: 8px 12px; border-radius: 8px; border: 1px solid #cbd5e1; background: white; color: #475569; font-weight: 700; font-size: 13px; cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active {
+            background: #3b82f6; color: white; border-color: #3b82f6;
+        }
+        .filter-container {
+            display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; white-space: nowrap; padding-bottom: 4px; scrollbar-width: none;
+        }
+        .filter-container::-webkit-scrollbar { display: none; }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+</head>
+<body>
+
+<div class="main-content">
+    <div style="margin-bottom: 24px; display: flex; justify-content: space-between; align-items: flex-start;">
+        <div onclick="location.href='deal-register.html'" style="cursor: pointer; transition: 0.1s;" onmousedown="this.style.opacity='0.7'" onmouseup="this.style.opacity='1'" onmouseleave="this.style.opacity='1'" title="홈으로 새로고침">
+            <h2 style="margin: 0; font-size: 28px; font-weight: 900; background: linear-gradient(135deg, #2563eb, #8b5cf6); -webkit-background-clip: text; -webkit-text-fill-color: transparent; letter-spacing: -0.5px; line-height: 1.2;">
+                One for All,<br>All for One
+            </h2>
+            <p style="margin: 6px 0 0 0; color: #6b7280; font-size: 13px; font-weight: 600;">신대림공인중개사 스마트 장부</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 8px;">
+            <div id="welcomeMessage" style="font-size: 13px; font-weight: 700; color: #4b5563;"></div>
+            <button type="button" onclick="logout()" style="background: white; border: 1px solid #e5e7eb; font-size: 13px; cursor: pointer; padding: 6px 10px; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); color: #4b5563; display: flex; align-items: center; gap: 4px; margin: 0; width: auto;" title="로그아웃">
+                🚪 로그아웃
+            </button>
+        </div>
+    </div>
+    
+    <h3 id="mainTitle" style="margin: 0 0 16px 0; font-size: 22px; font-weight: 800; color: #3b82f6; transition: color 0.3s;">🏢 매물장 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Property Ledger</span></h3>
+
+    <div style="display: flex; gap: 4px; margin-bottom: 24px; background: #f1f5f9; padding: 6px; border-radius: 16px; border: 1px solid #e2e8f0;">
+        <button class="tab-btn active-prop" id="tabProperties" onclick="switchTab('properties')">🏢 매물장</button>
+        <button class="tab-btn" id="tabClients" onclick="switchTab('clients')">🧑‍💼 손님 장부</button>
+    </div>
+
+    <!-- 매물장 탭 -->
+    <div id="propertiesTab">
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button class="btn-primary" onclick="openPropModal()" style="margin: 0; flex: 1;">+ 새 매물 등록하기</button>
+            <button id="excelPropBtn" onclick="downloadPropertiesExcel()" style="display: none; background: #16a34a; color: white; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">엑셀 ⬇️</button>
+        </div>
+        
+        <div class="filter-container" id="propFilterContainer">
+            <button class="filter-btn" onclick="setPropFilter('all', this)">전체</button>
+            <button class="filter-btn active" onclick="setPropFilter('거래가능', this)">🟢 거래가능</button>
+            <button class="filter-btn" onclick="setPropFilter('보류', this)">🟡 보류</button>
+            <button class="filter-btn" onclick="setPropFilter('거래종료', this)">🔴 거래종료</button>
+        </div>
+
+        <div id="propertiesList">
+            <div style="text-align:center; padding: 40px 0; color: #94a3b8; font-weight: 700;">로딩 중...</div>
+        </div>
+    </div>
+
+    <!-- 손님 장부 탭 -->
+    <div id="clientsTab" style="display: none;">
+        <div style="display: flex; gap: 8px; margin-bottom: 16px;">
+            <button class="btn-primary" onclick="openClientModal()" style="background: #10b981; margin: 0; flex: 1; box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);">+ 새 손님 등록하기</button>
+            <button id="excelClientBtn" onclick="downloadClientsExcel()" style="display: none; background: #16a34a; color: white; border: none; padding: 0 16px; border-radius: 12px; font-weight: 700; cursor: pointer; white-space: nowrap; box-shadow: 0 2px 4px rgba(22, 163, 74, 0.2);">엑셀 ⬇️</button>
+        </div>
+        
+        <div class="filter-container" id="clientFilterContainer">
+            <button class="filter-btn" onclick="setClientFilter('all', this)">전체</button>
+            <button class="filter-btn active" onclick="setClientFilter('탐색중', this)">🟢 탐색중</button>
+            <button class="filter-btn" onclick="setClientFilter('계약완료', this)">🤝 계약완료</button>
+            <button class="filter-btn" onclick="setClientFilter('변경/종료', this)">❌ 종료</button>
+        </div>
+
+        <div id="clientsList"></div>
+    </div>
+</div>
+
+<!-- 매물 등록 모달 -->
+<div class="modal-overlay" id="propModal" onmousedown="closeModal(event, 'propModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🏢 새 매물 등록</h3>
+            <button onclick="document.getElementById('propModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
+        </div>
+        
+        <div class="modal-body">
+            <input type="hidden" id="p_id">
+            <div class="form-group" id="wrap_p_status" style="display: none;">
+                <label class="form-label">매물 상태</label>
+                <select id="p_status" class="form-input" style="font-weight: bold;">
+                    <option value="거래가능">거래가능 (진행중)</option>
+                    <option value="보류">보류</option>
+                    <option value="거래종료(자체)">🤝 거래종료 (우리 사무실에서 계약)</option>
+                    <option value="거래종료(타부동산)">🏢 거래종료 (타부동산 계약 / 취소)</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">매물 주소 (건물/호수 선택)</label>
+                <div style="margin-bottom: 8px;">
+                    <select id="p_building_room_select" class="form-input">
+                        <option value="">마스터 주소 풀에서 검색 (입력 시 자동완성)</option>
+                    </select>
+                </div>
+                <input type="hidden" id="p_building_id">
+                <input type="hidden" id="p_room_id">
+                
+                <label class="form-label" style="font-size: 12px; color: #64748b; margin-top: 8px;">위 검색에 없는 신규 주소인 경우에만 아래에서 검색하세요.</label>
+                <div style="display: flex; gap: 8px; margin-bottom: 8px;">
+                    <input type="text" id="p_address_main" class="form-input" placeholder="새로운 주소 검색 (우편번호 API)" readonly style="flex: 1; background-color: #f1f5f9; cursor: pointer;" onclick="execDaumPostcode()">
+                    <button type="button" onclick="execDaumPostcode()" style="background: #3b82f6; color: white; border: none; border-radius: 12px; padding: 0 16px; font-weight: 700; cursor: pointer; white-space: nowrap;">새 주소 검색</button>
+                </div>
+                <input type="text" id="p_address_detail" class="form-input" placeholder="상세주소 (예: 101동 202호)">
+                <input type="text" id="p_nickname" class="form-input" placeholder="건물/매물 별명 (예: 감나무집) - 외부에 안 보임" style="margin-top: 8px; background-color: #fef3c7;">
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">매도/임대인 연락처</label>
+                    <input type="text" id="p_owner_phone" class="form-input" placeholder="010-0000-0000" oninput="this.value = formatPhoneNumber(this.value)">
+                </div>
+                <div class="form-group" style="flex: 1;">
+                    <label class="form-label">방문 예약 (세입자 등)</label>
+                    <input type="text" id="p_tenant_phone" class="form-input" placeholder="기본: 매도/임대인 동일" oninput="this.value = formatPhoneNumber(this.value)">
+                </div>
+            </div>
+            <div class="form-group">
+                <label class="form-label">거래 종류 (다중 선택 가능)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="매매" onchange="togglePriceFields()">매매</label>
+                    <label class="checkbox-label"><input type="checkbox" name="p_type" value="전월세" onchange="togglePriceFields()">전/월세(임대)</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="wrap_p_sale" style="display: none;">
+                <label class="form-label">매도가 (만원)</label>
+                <input type="number" id="p_sale" class="form-input" placeholder="예: 50000">
+            </div>
+            <div class="form-group" id="wrap_p_dep" style="display: none;">
+                <label class="form-label">보증금/전세금 (만원)</label>
+                <input type="number" id="p_dep" class="form-input" placeholder="예: 10000">
+            </div>
+            <div class="form-group" id="wrap_p_rent" style="display: none;">
+                <label class="form-label">월세 (만원)</label>
+                <input type="number" id="p_rent" class="form-input" placeholder="예: 50">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">방 구조</label>
+                <select id="p_room" class="form-input">
+                    <option value="">방 구조 선택</option>
+                    <option value="방1">방1(원룸)</option>
+                    <option value="방2">방2(투룸)</option>
+                    <option value="방3화1">방3 화1</option>
+                    <option value="방3화2">방3 화2</option>
+                    <option value="방4 이상">방4 이상</option>
+                    <option value="기타">기타</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">옵션/조건</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="p_pet">🐶 반려동물 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_option">📺 옵션(풀옵션)</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_parking">🚗 주차 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_loan">🏦 전세대출 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_lh">🏢 LH/SH 가능</label>
+                    <label class="checkbox-label"><input type="checkbox" id="p_basement">🔻 지층(반지하)</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">입주 가능 시기</label>
+                <select id="p_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="togglePropOcc()">
+                    <option value="즉시입주">즉시입주 가능</option>
+                    <option value="날짜협의">날짜협의 (조정 가능)</option>
+                    <option value="날짜확정">날짜확정 (특정일)</option>
+                    <option value="입주불가(세안고)">입주불가 (세안고 매매)</option>
+                </select>
+                <input type="date" id="p_occ_date" class="form-input" style="display: none;">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">메모 (주소, 동호수, 특징 등)</label>
+                <textarea id="p_memo" class="form-input" rows="3" placeholder="내부 확인용 메모를 적어주세요"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="saveProperty()" style="margin: 0;">저장하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 손님 등록 모달 -->
+<div class="modal-overlay" id="clientModal" onmousedown="closeModal(event, 'clientModal')">
+    <div class="modal-content" onclick="event.stopPropagation()">
+        <div class="modal-header">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800;">🧑‍💼 새 손님 조건 등록</h3>
+            <button onclick="document.getElementById('clientModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
+        </div>
+        
+        <div class="modal-body">
+            <input type="hidden" id="c_id">
+            <div class="form-group" id="wrap_c_status" style="display: none;">
+                <label class="form-label">손님 상태</label>
+                <select id="c_status" class="form-input" style="font-weight: bold;">
+                    <option value="탐색중">탐색중 (진행중)</option>
+                    <option value="계약완료(자체)">🤝 계약완료 (우리 사무실에서 계약)</option>
+                    <option value="계약완료(타부동산)">🏢 계약완료 (다른 곳에서 계약)</option>
+                    <option value="변경/종료">❌ 단순 변심 / 의뢰 취소</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label class="form-label">손님 연락처 (또는 식별정보)</label>
+                <input type="text" id="c_phone" class="form-input" placeholder="연락처 뒤 4자리, 특징 등" oninput="this.value = formatPhoneNumber(this.value)">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">찾으시는 거래 종류 (다중 선택)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="매매" onchange="toggleClientPrice()">매매</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="전세" onchange="toggleClientPrice()">전세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="월세" onchange="toggleClientPrice()">월세</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_type" value="갭투/투자" onchange="toggleClientPrice()">갭투/투자</label>
+                </div>
+            </div>
+            
+            <div class="form-group" id="wrap_c_budget" style="display: none;">
+                <label class="form-label">최소 예산 (매매/보증금, 만원)</label>
+                <input type="number" id="c_min_budget" class="form-input" placeholder="선택입력 (예: 20000)" style="margin-bottom: 8px;">
+                <label class="form-label">최대 예산 (매매/보증금, 만원)</label>
+                <input type="number" id="c_budget" class="form-input" placeholder="예: 30000">
+            </div>
+            <div class="form-group" id="wrap_c_rent" style="display: none;">
+                <label class="form-label">최대 허용 월세 (만원)</label>
+                <input type="number" id="c_rent" class="form-input" placeholder="예: 100">
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">희망 방 구조 (다중 선택 가능)</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="방1">방1</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="방2">방2</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="방3화1">방3 화1</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="방3화2">방3 화2</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="방4 이상">방4 이상</label>
+                    <label class="checkbox-label"><input type="checkbox" name="c_room_type" value="기타">기타</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">필수 조건</label>
+                <div class="checkbox-group">
+                    <label class="checkbox-label"><input type="checkbox" id="c_pet">🐶 반려동물 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_option">📺 옵션(풀옵션) 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_parking">🚗 주차 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_loan">🏦 전세대출 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_lh">🏢 LH/SH 필수</label>
+                    <label class="checkbox-label"><input type="checkbox" id="c_exclude_basement">🚫 지층 제외</label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">희망 입주 시기</label>
+                <select id="c_occ_type" class="form-input" style="margin-bottom: 8px;" onchange="toggleClientOcc()">
+                    <option value="무관">무관 (아무때나)</option>
+                    <option value="날짜확정">날짜확정 (특정일)</option>
+                    <option value="시기조정가능">시기조정가능 (대략적인 시기)</option>
+                </select>
+                <input type="date" id="c_occ_date" class="form-input" style="display: none;">
+                <input type="text" id="c_occ_memo" class="form-input" style="display: none;" placeholder="예: 7월 중순에서 8월 말 사이">
+            </div>
+
+            <div class="form-group" style="margin-bottom: 0;">
+                <label class="form-label">메모 (희망 지역, 층수 등)</label>
+                <textarea id="c_memo" class="form-input" rows="3" placeholder="기타 요구사항 메모"></textarea>
+            </div>
+        </div>
+
+        <div class="modal-footer">
+            <button class="btn-primary" onclick="saveClient()" style="margin: 0; background: #10b981;">저장하기</button>
+        </div>
+    </div>
+</div>
+
+<!-- 빠른 일정 등록 모달 -->
+<div class="modal-overlay" id="quickScheduleModal" style="display:none;" onmousedown="closeModal(event, 'quickScheduleModal')">
+    <div class="modal-content" style="max-height: 90vh; overflow-y: auto;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <h3 style="margin: 0; font-size: 18px; font-weight: 800; color: #1e293b;">📅 집 보기 약속 잡기</h3>
+            <button type="button" onclick="document.getElementById('quickScheduleModal').style.display='none'" style="background: none; border: none; font-size: 24px; color: #94a3b8; cursor: pointer; padding: 0 8px;">✕</button>
+        </div>
+        <input type="hidden" id="qs_building_id">
+        <input type="hidden" id="qs_room_id">
+        <div class="form-group">
+            <label class="form-label">방문 일시</label>
+            <input type="datetime-local" id="qs_date" class="form-input">
+        </div>
+        <div class="form-group">
+            <label class="form-label">메모 (선택)</label>
+            <textarea id="qs_memo" class="form-input" placeholder="예: 건물 앞 만나기로 함" style="height: 80px;"></textarea>
+        </div>
+        <button type="button" class="btn-primary" onclick="saveQuickSchedule()">일정 장부에 저장하기</button>
+    </div>
+</div>
+
+<nav class="bottom-nav">
+    <a href="deal-register.html" class="nav-item">
+        <span class="nav-icon">🏠</span>
+        <span>일정</span>
+    </a>
+    <a href="market.html" class="nav-item active">
+        <span class="nav-icon">📋</span>
+        <span>장부</span>
+    </a>
+    <a href="contacts.html" class="nav-item">
+        <span class="nav-icon">👥</span>
+        <span>연락처</span>
+    </a>
+    <a href="manual.html" class="nav-item">
+        <span class="nav-icon">📖</span>
+        <span>매뉴얼</span>
+    </a>
+    <a href="profile-edit.html" class="nav-item">
+        <span class="nav-icon">👤</span>
+        <span>내정보</span>
+    </a>
+</nav>
+
+<script src="auth-helper.js"></script>
+<script>
+    let propertiesData = [];
+    let clientsData = [];
+    
+    let currentPropFilter = '거래가능';
+    let currentClientFilter = '탐색중';
+
+    function setPropFilter(filter, btn) {
+        currentPropFilter = filter;
+        document.querySelectorAll('#propFilterContainer .filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        renderProperties();
+    }
+    
+    function setClientFilter(filter, btn) {
+        currentClientFilter = filter;
+        document.querySelectorAll('#clientFilterContainer .filter-btn').forEach(b => b.classList.remove('active'));
+        if(btn) btn.classList.add('active');
+        renderClients();
+    }
+
+    function switchTab(tabName) {
+        document.getElementById('propertiesTab').style.display = tabName === 'properties' ? 'block' : 'none';
+        document.getElementById('clientsTab').style.display = tabName === 'clients' ? 'block' : 'none';
+        document.getElementById('tabProperties').className = tabName === 'properties' ? 'tab-btn active-prop' : 'tab-btn';
+        document.getElementById('tabClients').className = tabName === 'clients' ? 'tab-btn active-client' : 'tab-btn';
+        
+        const titleEl = document.getElementById('mainTitle');
+        if (titleEl) {
+            if (tabName === 'properties') {
+                titleEl.innerHTML = '🏢 매물장 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Property Ledger</span>';
+                titleEl.style.color = '#3b82f6';
+            } else {
+                titleEl.innerHTML = '🧑‍💼 손님 장부 <span style="font-size:14px; font-weight:600; color:#94a3b8; margin-left:6px;">Client Ledger</span>';
+                titleEl.style.color = '#10b981';
+            }
+        }
+    }
+
+    function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+    function closeModal(e, id) { if(e.target.id === id) document.getElementById(id).style.display = 'none'; }
+
+    function togglePriceFields() {
+        const checked = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
+        document.getElementById('wrap_p_sale').style.display = checked.includes('매매') ? 'block' : 'none';
+        
+        // 매매 안고 파는 경우(기존 세입자)를 위해 보증금은 하나라도 선택되면 표시
+        document.getElementById('wrap_p_dep').style.display = (checked.length > 0) ? 'block' : 'none';
+        
+        // 월세 입력칸은 전월세 또는 매매 선택 시 표시
+        document.getElementById('wrap_p_rent').style.display = (checked.includes('전월세') || checked.includes('매매')) ? 'block' : 'none';
+
+        // 라벨 동적 변경
+        const depLabel = document.querySelector('#wrap_p_dep .form-label');
+        const rentLabel = document.querySelector('#wrap_p_rent .form-label');
+        if (checked.includes('매매') && !checked.includes('전월세')) {
+            depLabel.textContent = '보증금/전세금 (안고 파는 경우, 기존 세입자)';
+            rentLabel.textContent = '월세 (안고 파는 경우, 기존 세입자)';
+        } else {
+            depLabel.textContent = '보증금/전세금 (만원)';
+            rentLabel.textContent = '월세 (만원)';
+        }
+    }
+
+    function toggleClientPrice() {
+        const checked = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
+        document.getElementById('wrap_c_budget').style.display = checked.length > 0 ? 'block' : 'none';
+        document.getElementById('wrap_c_rent').style.display = checked.includes('월세') ? 'block' : 'none';
+    }
+
+    function togglePropOcc() {
+        const val = document.getElementById('p_occ_type').value;
+        document.getElementById('p_occ_date').style.display = (val === '날짜확정' || val === '날짜협의') ? 'block' : 'none';
+    }
+
+    function toggleClientOcc() {
+        const val = document.getElementById('c_occ_type').value;
+        document.getElementById('c_occ_date').style.display = (val === '날짜확정') ? 'block' : 'none';
+        document.getElementById('c_occ_memo').style.display = (val === '시기조정가능') ? 'block' : 'none';
+    }
+
+    function execDaumPostcode() {
+        new daum.Postcode({
+            oncomplete: function(data) {
+                let roadAddr = data.roadAddress || data.autoRoadAddress || '';
+                let jibunAddr = data.jibunAddress || data.autoJibunAddress || '';
+                
+                if (!roadAddr) roadAddr = data.address;
+                if (!jibunAddr && data.userSelectedType === 'J') {
+                    jibunAddr = data.address;
+                }
+                
+                let extraAddr = '';
+                if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                    extraAddr += data.bname;
+                }
+                if(data.buildingName !== '' && data.apartment === 'Y'){
+                    extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                }
+                if(extraAddr !== ''){
+                    extraAddr = ' (' + extraAddr + ')';
+                }
+                
+                let finalAddr = roadAddr + extraAddr;
+                if (jibunAddr && finalAddr.indexOf(jibunAddr) === -1) {
+                    finalAddr += ` [지번: ${jibunAddr}]`;
+                }
+                
+                document.getElementById('p_address_main').value = finalAddr;
+                document.getElementById('p_address_detail').focus();
+            }
+        }).open();
+    }
+
+    async function loadData() {
+        // Load Properties
+        const { data: props, error: e1 } = await supabaseClient.from('properties').select('*').eq('office_id', window.currentUser.office_id).order('created_at', { ascending: false });
+        if (e1) console.error(e1);
+        propertiesData = props || [];
+
+        // Load Clients
+        const { data: clients, error: e2 } = await supabaseClient
+            .from('client_requests')
+            .select(`
+                *,
+                schedules (
+                    id,
+                    schedule_type,
+                    schedule_date,
+                    memo,
+                    buildings ( jibun_address, road_address ),
+                    rooms ( room_name )
+                )
+            `)
+            .eq('office_id', window.currentUser.office_id)
+            .order('created_at', { ascending: false });
+        if (e2) console.error(e2);
+        clientsData = clients || [];
+        
+        // Render both now that BOTH data arrays are fully loaded
+        renderProperties();
+        renderClients();
+
+        if (window.currentUser && window.currentUser.role === 'admin') {
+            const btn1 = document.getElementById('excelPropBtn');
+            const btn2 = document.getElementById('excelClientBtn');
+            if (btn1) btn1.style.display = 'block';
+            if (btn2) btn2.style.display = 'block';
+        }
+    }
+
+    function downloadPropertiesExcel() {
+        if (!propertiesData || propertiesData.length === 0) {
+            alert("다운로드할 매물 데이터가 없습니다."); return;
+        }
+        
+        const rows = propertiesData.map(p => ({
+            "등록일": new Date(p.created_at).toLocaleDateString(),
+            "상태": p.status,
+            "거래종류": (p.deal_types || []).join(', '),
+            "매도가(만)": p.sale_price || '',
+            "보증금(만)": p.deposit || '',
+            "월세(만)": p.monthly_rent || '',
+            "주소": p.address || '',
+            "별명": p.nickname || '',
+            "방수": p.room_count || '',
+            "매도/임대인 연락처": p.owner_phone || '',
+            "세입자 연락처": p.tenant_phone || '',
+            "입주시기": p.occupancy_type + (p.occupancy_date ? ` (${p.occupancy_date})` : ''),
+            "옵션/조건": [
+                p.pet_allowed ? '반려동물' : '',
+                p.parking_allowed ? '주차' : '',
+                p.loan_allowed ? '대출가능' : '',
+                p.lh_sh_allowed ? 'LH/SH' : '',
+                p.is_basement ? '반지하' : ''
+            ].filter(Boolean).join(', '),
+            "메모": p.memo || ''
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "매물목록");
+        XLSX.writeFile(wb, "매물장부_백업.xlsx");
+    }
+
+    function downloadClientsExcel() {
+        if (!clientsData || clientsData.length === 0) {
+            alert("다운로드할 손님 데이터가 없습니다."); return;
+        }
+        
+        const rows = clientsData.map(c => ({
+            "등록일": new Date(c.created_at).toLocaleDateString(),
+            "상태": c.status,
+            "찾는종류": (c.target_types || []).join(', '),
+            "최대예산/보증금(만)": c.max_budget || '',
+            "최대월세(만)": c.max_monthly || '',
+            "손님 연락처": c.client_phone || '',
+            "최소방수": c.min_room_count || '',
+            "희망입주시기": c.occupancy_type + (c.occupancy_date ? ` (${c.occupancy_date})` : '') + (c.occupancy_period_memo ? ` (${c.occupancy_period_memo})` : ''),
+            "필수조건": [
+                c.need_pet ? '반려동물' : '',
+                c.need_parking ? '주차' : '',
+                c.need_loan ? '대출필수' : '',
+                c.need_lh_sh ? 'LH/SH' : '',
+                c.need_exclude_basement ? '지층제외' : ''
+            ].filter(Boolean).join(', '),
+            "메모": c.memo || ''
+        }));
+        
+        const ws = XLSX.utils.json_to_sheet(rows);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, "손님목록");
+        XLSX.writeFile(wb, "손님장부_백업.xlsx");
+    }
+
+    async function loadBuildingsAndRooms() {
+        const { data: buildings } = await supabaseClient.from('buildings').select('*').eq('office_id', window.currentUser.office_id);
+        const { data: rooms } = await supabaseClient.from('rooms').select('*').eq('office_id', window.currentUser.office_id);
+        
+        if (!buildings || !rooms) return;
+
+        const select = document.getElementById('p_building_room_select');
+        select.innerHTML = '<option value="">일정 장부에서 주소 불러오기 (선택사항)</option>';
+
+        buildings.forEach(b => {
+            const bRooms = rooms.filter(r => r.building_id === b.id);
+            const bAddr = b.road_address + (b.jibun_address ? ` [지번: ${b.jibun_address}]` : '');
+            
+            const optB = document.createElement('option');
+            optB.value = b.id + '|';
+            optB.textContent = `[건물전체] ${bAddr}`;
+            select.appendChild(optB);
+
+            bRooms.forEach(r => {
+                const optR = document.createElement('option');
+                optR.value = b.id + '|' + r.id;
+                optR.textContent = `${bAddr} ${r.room_name}`;
+                select.appendChild(optR);
+            });
+        });
+
+        if (window.propAddressTomSelect) {
+            window.propAddressTomSelect.destroy();
+        }
+        
+        window.propAddressTomSelect = new TomSelect("#p_building_room_select", {
+            plugins: ['clear_button'],
+            create: false,
+            placeholder: "일정 장부에서 주소 검색...",
+            maxOptions: 100,
+            onChange: function(value) {
+                if (!value) {
+                    document.getElementById('p_building_id').value = '';
+                    document.getElementById('p_room_id').value = '';
+                    return;
+                }
+                const [bId, rId] = value.split('|');
+                document.getElementById('p_building_id').value = bId;
+                document.getElementById('p_room_id').value = rId;
+
+                const b = buildings.find(x => x.id === bId);
+                const r = rooms.find(x => x.id === rId);
+
+                let mainAddr = b.road_address;
+                if (b.jibun_address) {
+                    mainAddr += ` [지번: ${b.jibun_address}]`;
+                }
+                
+                document.getElementById('p_address_main').value = mainAddr;
+                document.getElementById('p_address_detail').value = r ? r.room_name : '';
+                
+                if (b && b.owner_phone && !document.getElementById('p_owner_phone').value) {
+                    document.getElementById('p_owner_phone').value = formatPhoneNumber(b.owner_phone);
+                }
+            }
+        });
+    }
+
+    function formatPhoneNumber(number, ownerId) {
+        if (!number) return '';
+        const cleaned = ('' + number).replace(/\D/g, '');
+        let formatted = number;
+        if (cleaned.length === 11) {
+            formatted = cleaned.replace(/(\d{3})(\d{4})(\d{4})/, '$1-$2-$3');
+        } else if (cleaned.length === 10) {
+            if (cleaned.startsWith('02')) {
+                formatted = cleaned.replace(/(\d{2})(\d{4})(\d{4})/, '$1-$2-$3');
+            } else {
+                formatted = cleaned.replace(/(\d{3})(\d{3})(\d{4})/, '$1-$2-$3');
+            }
+        } else if (cleaned.length === 9) {
+            formatted = cleaned.replace(/(\d{2})(\d{3})(\d{4})/, '$1-$2-$3');
+        } else if (cleaned.length === 8 && !cleaned.startsWith('0')) {
+            formatted = cleaned.replace(/(\d{4})(\d{4})/, '$1-$2'); // 1588-0000
+        }
+        
+        if (window.currentUser && window.currentUser.role === 'admin') return formatted;
+        if (ownerId && window.currentUser && window.currentUser.id === ownerId) return formatted;
+        
+        if (formatted.includes('-')) {
+            return formatted.replace(/(?<=\d{2,3}-)\d{3,4}(?=-\d{4})/, '****');
+        }
+        return formatted;
+    }
+
+    function formatMoney(val) {
+        if (!val) return '0';
+        if (val >= 10000) {
+            const uk = Math.floor(val / 10000);
+            const man = val % 10000;
+            return man > 0 ? `${uk}억 ${man}만` : `${uk}억`;
+        }
+        return `${val}만`;
+    }
+
+    function createPropertyCard(p_orig, isMatched = false, client = null, matchedClients = []) {
+        let p = { ...p_orig };
+        if (window.formatAddress) p.address = window.formatAddress(p.address, p.user_id);
+        p.owner_phone = formatPhoneNumber(p.owner_phone, p.user_id);
+        p.tenant_phone = formatPhoneNumber(p.tenant_phone, p.user_id);
+        
+        let typeChips = (p.deal_types || []).map(t => {
+            let cls = t==='매매' ? 'sale' : (t==='전세' ? 'jeonse' : 'wolse');
+            return `<span class="chip ${cls}">${t}</span>`;
+        }).join('');
+        
+        let priceStr = [];
+        if (p.deal_types && p.deal_types.includes('매매') && p.sale_price && p.deposit) {
+            let actualInvest = p.sale_price - p.deposit;
+            let subStr = `실투 ${formatMoney(actualInvest)}`;
+            if (p.monthly_rent) subStr += ` / 월 ${p.monthly_rent}만`;
+            if (p.occupancy_date) subStr += ` 만기 ${p.occupancy_date}`;
+            priceStr.push(`매도 ${formatMoney(p.sale_price)} <span style="font-size: 13px; color: #ef4444; font-weight: 800;">(${subStr})</span>`);
+        } else {
+            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
+            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        }
+        
+        let p_rooms_tag = '';
+        if (p.memo && p.memo.includes('[ROOM:')) {
+            const match = p.memo.match(/\[ROOM:(.*?)\]/);
+            if (match) p_rooms_tag = match[1];
+        }
+        let opts = [];
+        if (p_rooms_tag) {
+            opts.push(`🚪${p_rooms_tag}`);
+        } else if (p.room_count) {
+            opts.push(`방 ${p.room_count}개`);
+        }
+        if (p.memo && p.memo.includes('[HAS_OPTION]')) {
+            opts.push('📺풀옵션');
+        }
+        p.memo = p.memo ? p.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[HAS_OPTION\]/g, '').trim() : '';
+        if (p.pet_allowed) opts.push('🐶반려동물');
+        if (p.parking_allowed) opts.push('🚗주차');
+        if (p.loan_allowed || p.loan_sh_lh_allowed) opts.push('🏦대출가능');
+        if (p.lh_sh_allowed) opts.push('🏢LH/SH가능');
+        if (p.is_basement) opts.push('🔻지층');
+        
+        let occStr = p.occupancy_type || '입주시기 미정';
+        if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
+            occStr += ` (${p.occupancy_date})`;
+        }
+        if (p.occupancy_type === '즉시입주') occStr = '🏃즉시입주';
+        
+        let phoneHtml = '';
+        if (p.owner_phone || p.tenant_phone) {
+            let ownerStr = p.owner_phone ? `주인: ${formatPhoneNumber(p.owner_phone)}` : '';
+            let tenantStr = p.tenant_phone ? `방문: ${formatPhoneNumber(p.tenant_phone)}` : (p.owner_phone ? '방문: 주인과 동일' : '');
+            phoneHtml = `<div style="font-size: 13px; font-weight: 700; color: #b91c1c; margin-bottom: 6px; background: #fee2e2; padding: 6px; border-radius: 6px;">📞 ${[ownerStr, tenantStr].filter(Boolean).join(' | ')}</div>`;
+        }
+
+        let displayAddr = p.address || '';
+        let mapAddr = p.address || '';
+        const jibunRegex = /^(.*?)\s*\[지번:\s*(.*?)\]\s*(.*)$/;
+        const match = displayAddr.match(jibunRegex);
+        
+        if (match) {
+            const roadAddr = match[1].trim();
+            const jibunAddr = match[2].trim();
+            const rest = match[3].trim();
+            displayAddr = `${jibunAddr} <span style="color:#3b82f6;">${rest}</span> <span style="display:block; font-size:13px; color:#64748b; font-weight:normal; margin-top:2px;">(도로명: ${roadAddr})</span>`;
+            mapAddr = `${jibunAddr} ${rest}`.trim();
+        }
+
+        const mapBtn = p.address ? `<a href="https://map.kakao.com/link/search/${encodeURIComponent(mapAddr)}" target="_blank" style="background: #3b82f6; color: white; border: none; padding: 4px 8px; border-radius: 6px; font-weight: 700; font-size: 11px; text-decoration: none; display: flex; align-items: center; gap: 2px; white-space: nowrap;">🗺️ 지도보기</a>` : '';
+
+        const isClosed = p.status.includes('거래종료');
+        const cardStyle = isMatched 
+            ? 'style="border: 2px solid #3b82f6; background: #f8fafc; padding: 12px; margin-bottom: 8px;"' 
+            : (isClosed ? 'style="opacity: 0.6; position: relative;"' : 'style="position: relative;"');
+        const strikethroughHtml = isClosed ? `<div style="position: absolute; top: 50%; left: 12px; right: 12px; height: 2px; background: #ef4444; transform: translateY(-50%); z-index: 10; pointer-events: none;"></div>` : '';
+
+        let pStatusBadge = '';
+        if (!isMatched) {
+            if (p.status === '거래가능') {
+                pStatusBadge = `<span class="chip neutral" style="position: relative; z-index: 11; background:#f1f5f9; color:#475569;">${p.status}</span>`;
+            } else if (p.status.includes('거래종료(자체)')) {
+                pStatusBadge = `<span class="chip" style="position: relative; z-index: 11; background:#dbeafe; color:#1d4ed8;">🤝 거래종료 (자체)</span>`;
+            } else if (p.status.includes('거래종료')) {
+                pStatusBadge = `<span class="chip" style="position: relative; z-index: 11; background:#fee2e2; color:#b91c1c;">🏢 거래종료 (타부동산)</span>`;
+            } else {
+                pStatusBadge = `<span class="chip neutral" style="position: relative; z-index: 11;">${p.status}</span>`;
+            }
+        }
+
+        let isViewed = false;
+        let viewedAtStr = '';
+        if (isMatched && client) {
+            const viewedList = client.viewed_properties || [];
+            const viewedItem = viewedList.find(v => v.property_id === p.id);
+            if (viewedItem) {
+                isViewed = true;
+                const d = new Date(viewedItem.viewed_at);
+                viewedAtStr = `${d.getMonth()+1}/${d.getDate()}`;
+            }
+        }
+
+        let jibunOnly = '';
+        if (p.address && p.address.includes('[지번:')) {
+            const match = p.address.match(/\[지번:\s*(.*?)\]/);
+            if (match) jibunOnly = match[1];
+        } else {
+            jibunOnly = p.address || '주소 없음';
+        }
+
+        let innerCardHtml = `
+        <div class="card" ${cardStyle}>
+            ${strikethroughHtml}
+            <div style="display: flex; justify-content: space-between; margin-bottom: 8px;">
+                <div style="position: relative; z-index: 11;">${typeChips}</div>
+                ${pStatusBadge}
+            </div>
+            ${p.address ? `<div style="display: flex; align-items: flex-start; justify-content: space-between; margin-bottom: 6px;">
+                <div style="font-size: 15px; font-weight: 800; color: #065f46; word-break: keep-all; flex:1;">📍 ${displayAddr} ${p.nickname ? '<span style="font-size: 11px; color: #b45309; background: #fef3c7; padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle;">🏷️ ' + p.nickname + '</span>' : ''}</div>
+                <div style="margin-left:8px;">${mapBtn}</div>
+            </div>` : ''}
+            ${phoneHtml}
+            <div style="font-size: 18px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">${priceStr.join(' / ')}</div>
+            <div style="font-size: 13px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">📅 입주: ${occStr}</div>
+            <div style="font-size: 13px; font-weight: 600; color: #64748b; margin-bottom: 8px;">${opts.join(' · ')}</div>
+            ${p.memo ? `<div style="font-size: 14px; color: #334155; background: #e2e8f0; padding: 10px; border-radius: 8px;">${p.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
+            <div style="margin-top: 10px; display: flex; justify-content: flex-end; gap: 6px; flex-wrap: wrap;">
+                <button onclick="copyPropertyToKakao('${p.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; display: flex; align-items: center; gap: 4px; white-space: nowrap;">
+                    카톡 복사
+                </button>
+                ${!isMatched ? `
+                ${p.status !== '거래종료' ? 
+                    `<button onclick="closeProperty('${p.id}')" style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;">종결</button>`
+                    : 
+                    `<button onclick="reopenProperty('${p.id}')" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;">거래가능 전환</button>`
+                }
+                <button onclick="openPropModal('${p.id}')" style="background: #f1f5f9; color: #475569; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;">수정</button>
+                <button onclick="deleteProperty('${p.id}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 6px 12px; border-radius: 6px; font-weight: 700; font-size: 12px; cursor: pointer; white-space: nowrap;">삭제</button>
+                ` : ''}
+            </div>
+            ${(() => {
+                if (isMatched && client) {
+                    const viewedList = client.viewed_properties || [];
+                    const viewedItem = viewedList.find(v => v.property_id === p.id);
+                    const isViewed = !!viewedItem;
+                    const viewedAtStr = isViewed ? new Date(viewedItem.viewed_at).toLocaleDateString() : '';
+                    
+                    const isScheduled = isViewed && viewedItem.scheduled_at;
+                    const scheduledAtStr = isScheduled ? new Date(viewedItem.scheduled_at).toLocaleString('ko-KR', { month: 'numeric', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+                    
+                    return '<div style="margin-top: 10px; padding-top: 10px; border-top: 1px dashed #cbd5e1; display: flex; justify-content: space-between; align-items: center;">' +
+                        '<label style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: ' + (isViewed ? '#10b981' : '#64748b') + '; cursor: pointer;">' +
+                            '<input type="checkbox" onchange="toggleViewedProperty(\'' + client.id + '\', \'' + p.id + '\', this.checked)" ' + (isViewed ? 'checked' : '') + ' style="width: 16px; height: 16px; accent-color: #10b981;">' +
+                            (isViewed ? '✅ 집 보여줌 완료 (' + formatPhoneNumber(client.client_phone) + ')' : '집 보여줌 체크 (' + formatPhoneNumber(client.client_phone) + ')') +
+                        '</label>' +
+                        '<div style="display: flex; align-items: center; gap: 8px;">' +
+                            (isViewed ? 
+                                ''
+                                :
+                                (isScheduled ?
+                                    '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\'' + (p.building_id || '') + '\', \'' + (p.room_id || '') + '\', \'' + formatPhoneNumber(client.client_phone) + '\', \'' + client.id + '\', \'' + p.id + '\')" style="background: #fef3c7; color: #d97706; border: 1px solid #fde68a; padding: 4px 10px; border-radius: 6px; font-weight: 800; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(217, 119, 6, 0.1);">' + scheduledAtStr + '</button>'
+                                    :
+                                    '<button type="button" onclick="event.stopPropagation(); openQuickSchedule(\'' + (p.building_id || '') + '\', \'' + (p.room_id || '') + '\', \'' + formatPhoneNumber(client.client_phone) + '\', \'' + client.id + '\', \'' + p.id + '\')" style="background: #3b82f6; color: white; border: none; padding: 4px 10px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);">약속잡기</button>'
+                                )
+                            ) +
+                            (isViewed ? '<span style="font-size: 11px; color: #94a3b8;">' + viewedAtStr + ' 방문</span>' : '') +
+                        '</div>' +
+                    '</div>';
+                }
+                if (!isMatched && matchedClients && matchedClients.length > 0) {
+                    return '<button type="button" onclick="showMatchesForProperty(\'' + p.id + '\')" style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px dashed #10b981; background: #f0fdf4; color: #16a34a; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background=\'#dcfce7\'" onmouseout="this.style.background=\'#f0fdf4\'">🤝 매수/임차 희망 손님 (' + matchedClients.length + '명) 보기</button>';
+                }
+                return '';
+            })()}
+        </div>
+        `;
+        if (isMatched && isViewed) {
+            return `
+            <details style="background: #f1f5f9; border: 1px solid #cbd5e1; border-radius: 8px; padding: 8px 12px; margin-bottom: 8px;">
+                <summary style="font-size: 14px; font-weight: 700; color: #475569; cursor: pointer; outline: none;">
+                    ✅ ${jibunOnly} ${p.nickname ? '<span style="font-size: 11px; color: #b45309; background: #fde68a; padding: 2px 6px; border-radius: 4px; margin-left: 4px; vertical-align: middle;">🏷️ ' + p.nickname + '</span>' : ''} <span style="float: right; font-size: 12px; font-weight: 600; color: #64748b; margin-top: 2px;">${viewedAtStr} 방문</span>
+                </summary>
+                <div style="margin-top: 10px;">
+                    ${innerCardHtml}
+                    <div style="text-align: center; margin-top: 12px; padding-top: 10px; border-top: 1px dashed #cbd5e1;">
+                        <button onclick="this.closest('details').removeAttribute('open')" style="background: white; border: 1px solid #cbd5e1; border-radius: 8px; color: #475569; font-size: 13px; font-weight: 700; cursor: pointer; padding: 6px 16px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            ▲ 닫기
+                        </button>
+                    </div>
+                </div>
+            </details>
+            `;
+        }
+        return innerCardHtml;
+    }
+
+    async function toggleViewedProperty(clientId, propertyId, isChecked) {
+        const client = clientsData.find(c => c.id === clientId);
+        if (!client) return;
+
+        let viewedList = client.viewed_properties || [];
+        if (isChecked) {
+            if (!viewedList.find(v => v.property_id === propertyId)) {
+                viewedList.push({ property_id: propertyId, viewed_at: new Date().toISOString() });
+            }
+        } else {
+            viewedList = viewedList.filter(v => v.property_id !== propertyId);
+        }
+
+        // Optimistic update
+        client.viewed_properties = viewedList;
+        renderClients();
+
+        try {
+            const { error } = await supabaseClient.from('client_requests').update({ viewed_properties: viewedList }).eq('id', clientId);
+            if (error) {
+                console.error(error);
+                alert('방문 기록 저장 중 오류가 발생했습니다.');
+            }
+            
+            // 일정이 잡혀있었다면 해당 일정도 완료 처리
+            if (isChecked) {
+                const { data: prop } = await supabaseClient.from('properties').select('building_id').eq('id', propertyId).single();
+                if (prop && prop.building_id) {
+                    const memoMatch = '🧑‍💼 손님(' + formatPhoneNumber(client.client_phone) + ')과 집 보기 약속';
+                    await supabaseClient.from('schedule_tasks')
+                        .update({ is_completed: true })
+                        .eq('office_id', window.currentUser.office_id)
+                        .eq('contract_type', '기타')
+                        .eq('memo', memoMatch)
+                        .eq('is_completed', false)
+                        .eq('building_id', prop.building_id);
+                }
+            }
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    async function rejectProperty(clientId, propertyId) {
+        if (!confirm('이 손님은 이 집을 볼 의사가 없습니까?\n(매칭 목록에서 제외되며 취소선이 그어집니다.)')) return;
+        const client = clientsData.find(c => c.id === clientId);
+        if (!client) return;
+
+        let viewedList = client.viewed_properties || [];
+        const existing = viewedList.find(v => v.property_id === propertyId);
+        if (existing) {
+            existing.is_rejected = true;
+        } else {
+            viewedList.push({ property_id: propertyId, viewed_at: new Date().toISOString(), is_rejected: true });
+        }
+        client.viewed_properties = viewedList;
+        renderProperties();
+        renderClients();
+        
+        try {
+            await supabaseClient.from('client_requests').update({ viewed_properties: viewedList }).eq('id', clientId);
+        } catch(e) {
+            console.error(e);
+        }
+    }
+    
+    async function undoRejectProperty(clientId, propertyId) {
+        const client = clientsData.find(c => c.id === clientId);
+        if (!client) return;
+
+        let viewedList = client.viewed_properties || [];
+        const existing = viewedList.find(v => v.property_id === propertyId);
+        if (existing && !existing.scheduled_at && existing.is_rejected) {
+            viewedList = viewedList.filter(v => v.property_id !== propertyId);
+        } else if (existing) {
+            existing.is_rejected = false;
+        }
+        
+        client.viewed_properties = viewedList;
+        renderProperties();
+        renderClients();
+        
+        try {
+            await supabaseClient.from('client_requests').update({ viewed_properties: viewedList }).eq('id', clientId);
+        } catch(e) {
+            console.error(e);
+        }
+    }
+
+    function isMatch(p, c) {
+        if ((p.status || '').trim() !== '거래가능') return false;
+        if ((c.status || '').trim() !== '탐색중') return false;
+        
+        if (!p.deal_types || !Array.isArray(p.deal_types)) return false;
+        if (!c.target_types || !Array.isArray(c.target_types)) return false;
+        
+        const typeMatch = p.deal_types.some(pt => {
+            if (c.target_types.includes(pt)) return true;
+            if (pt === '매매' && c.target_types.includes('갭투/투자')) return true;
+            return false;
+        });
+        if (!typeMatch) return false;
+        
+        let isBudgetOk = false;
+        const pSale = parseInt(p.sale_price) || 0;
+        const pDep = parseInt(p.deposit) || 0;
+        const pRent = parseInt(p.monthly_rent) || 0;
+        
+        const cMaxBudget = parseInt(c.max_budget) || 9999999;
+        const cMinBudget = parseInt(c.min_budget) || 0; // 최소 예산 추가 (TDD 검증 완료)
+        const cMaxMonthly = parseInt(c.max_monthly) || 0;
+        const flexRent = cMaxMonthly > 0 ? cMaxMonthly + 10 : 9999999;
+        
+        if ((c.target_types.includes('매매') || c.target_types.includes('갭투/투자')) && p.deal_types.includes('매매')) {
+            if (pSale > 0 && pSale >= cMinBudget && pSale <= cMaxBudget) isBudgetOk = true;
+        }
+        if (c.target_types.includes('전세') && p.deal_types.includes('전세')) {
+            if (pDep > 0 && pRent === 0 && pDep >= cMinBudget && pDep <= cMaxBudget) isBudgetOk = true;
+        }
+        if (c.target_types.includes('월세') && p.deal_types.includes('월세')) {
+            if (pDep >= cMinBudget && pDep <= cMaxBudget && pRent > 0 && pRent <= flexRent) isBudgetOk = true;
+        }
+        
+        if (!isBudgetOk) return false;
+
+        let pRoomTag = '';
+        if (p.memo && p.memo.includes('[ROOM:')) {
+            let m = p.memo.match(/\[ROOM:(.*?)\]/);
+            if (m) pRoomTag = m[1];
+        }
+        let cRoomTag = '';
+        if (c.memo && c.memo.includes('[ROOM:')) {
+            let m = c.memo.match(/\[ROOM:(.*?)\]/);
+            if (m) cRoomTag = m[1];
+        }
+
+        if (cRoomTag && pRoomTag) {
+            let cRooms = cRoomTag.split(',');
+            let pRooms = pRoomTag.split(',');
+            let intersects = pRooms.some(r => cRooms.includes(r));
+            if (!intersects) return false;
+        } else {
+            const pRoom = parseInt(p.room_count) || 0;
+            const cRoom = parseInt(c.min_room_count) || 0;
+            if (cRoom > 0 && pRoom > 0 && pRoom < cRoom - 1) return false;
+        }
+
+        if (c.memo && c.memo.includes('[NEED_OPTION]') && (!p.memo || !p.memo.includes('[HAS_OPTION]'))) return false;
+        if (c.need_pet && !p.pet_allowed) return false;
+        if (c.need_parking && !p.parking_allowed) return false;
+        if (c.need_loan && !p.loan_allowed) return false;
+        if (c.need_lh_sh && !p.lh_sh_allowed) return false;
+        if (c.need_exclude_basement && p.is_basement) return false;
+        
+        if (p.occupancy_type === '입주불가(세안고)' && c.occupancy_type !== '무관') return false;
+        
+        if (c.viewed_properties && c.viewed_properties.some(v => v.property_id === p.id && v.is_rejected)) {
+            return false;
+        }
+        
+        return true;
+    }
+
+    function renderProperties() {
+        const list = document.getElementById('propertiesList');
+        
+        let filteredData = propertiesData;
+        if (currentPropFilter !== 'all') {
+            if (currentPropFilter === '거래종료') {
+                filteredData = propertiesData.filter(p => p.status.includes('거래종료'));
+            } else {
+                filteredData = propertiesData.filter(p => p.status === currentPropFilter);
+            }
+        }
+        
+        if (filteredData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">해당 조건의 매물이 없습니다.</div>`;
+            return;
+        }
+        
+        let html = '';
+        filteredData.forEach(p => {
+            const matched = ((p.status || '').trim() === '거래가능') ? clientsData.filter(c => isMatch(p, c)) : [];
+            const viewed = clientsData.filter(c => c.viewed_properties && c.viewed_properties.some(v => v.property_id === p.id));
+            
+            let combinedClients = [...viewed];
+            matched.forEach(mc => {
+                if (!combinedClients.find(c => c.id === mc.id)) combinedClients.push(mc);
+            });
+            
+            html += createPropertyCard(p, false, null, combinedClients);
+        });
+        list.innerHTML = html;
+    }
+
+    function renderClients() {
+        const list = document.getElementById('clientsList');
+        
+        let filteredData = clientsData;
+        if (currentClientFilter !== 'all') {
+            if (currentClientFilter === '계약완료') {
+                filteredData = clientsData.filter(c => c.status.includes('계약완료'));
+            } else {
+                filteredData = clientsData.filter(c => c.status === currentClientFilter);
+            }
+        }
+        
+        if (filteredData.length === 0) {
+            list.innerHTML = `<div style="text-align:center; padding: 40px 0; color: #94a3b8;">해당 조건의 손님이 없습니다.</div>`;
+            return;
+        }
+        
+        let html = '';
+        filteredData.forEach(c_orig => {
+            let c = { ...c_orig };
+            c.client_phone = formatPhoneNumber(c.client_phone, c.user_id);
+            let typeChips = (c.target_types || []).map(t => `<span class="chip neutral" style="background:#e2e8f0; color:#334155;">${t} 찾음</span>`).join('');
+            
+            let budgetStr = ``;
+            if (c.min_budget) {
+                budgetStr += `${formatMoney(c.min_budget)} ~ ${formatMoney(c.max_budget)}`;
+            } else {
+                budgetStr += `최대 ${formatMoney(c.max_budget)}`;
+            }
+            if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
+
+            let c_rooms_tag = '';
+            if (c.memo && c.memo.includes('[ROOM:')) {
+                const match = c.memo.match(/\[ROOM:(.*?)\]/);
+                if (match) c_rooms_tag = match[1];
+            }
+            let reqs = [];
+            if (c_rooms_tag) {
+                reqs.push(`🚪${c_rooms_tag}`);
+            } else if (c.min_room_count) {
+                reqs.push(`방 ${c.min_room_count}개 이상`);
+            }
+            if (c.memo && c.memo.includes('[NEED_OPTION]')) {
+                reqs.push('📺옵션 필수');
+            }
+            c.memo = c.memo ? c.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[NEED_OPTION\]/g, '').trim() : '';
+            if (c.need_pet) reqs.push('🐶반려동물 필수');
+            if (c.need_parking) reqs.push('🚗주차 필수');
+            if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 필수');
+            if (c.need_lh_sh) reqs.push('🏢LH/SH 필수');
+            if (c.need_exclude_basement) reqs.push('🚫지층 제외');
+
+            let occStr = c.occupancy_type || '무관';
+            if (c.occupancy_type === '날짜확정' && c.occupancy_date) occStr = `📅 ${c.occupancy_date} 입주확정`;
+            if (c.occupancy_type === '시기조정가능' && c.occupancy_period_memo) occStr = `📅 시기조정 (${c.occupancy_period_memo})`;
+            if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
+
+            // Find matches
+            const matches = propertiesData.filter(p => isMatch(p, c));
+
+            // 상태 뱃지 동적 생성
+            let statusBadge = `<span class="chip neutral">${c.status}</span>`;
+            if (c.status === '탐색중') {
+                if (matches.length > 0) {
+                    statusBadge = `<span class="chip" style="background:#dcfce7; color:#15803d; border: 1px solid #bbf7d0;">✨ 매칭 ${matches.length}건</span>`;
+                } else {
+                    statusBadge = `<span class="chip neutral" style="background:#f1f5f9; color:#475569;">🔍 탐색중</span>`;
+                }
+            } else if (c.status === '계약완료' || c.status === '계약완료(자체)') {
+                statusBadge = `<span class="chip" style="background:#dbeafe; color:#1d4ed8;">🤝 계약완료 (자체)</span>`;
+            } else if (c.status === '계약완료(타부동산)') {
+                statusBadge = `<span class="chip" style="background:#f3e8ff; color:#7e22ce;">🏢 계약완료 (타부동산)</span>`;
+            } else if (c.status === '변경/종료') {
+                statusBadge = `<span class="chip" style="background:#fee2e2; color:#b91c1c;">❌ 의뢰 종료</span>`;
+            }
+
+            const isClientClosed = c.status !== '탐색중';
+            const cardStyle = isClientClosed ? 'style="border-left: 4px solid #94a3b8; opacity: 0.6; position: relative;"' : 'style="border-left: 4px solid #10b981; position: relative;"';
+            const strikethroughHtml = isClientClosed ? `<div style="position: absolute; top: 120px; left: 12px; right: 12px; height: 2px; background: #ef4444; z-index: 10; pointer-events: none;"></div>` : '';
+
+            html += `
+            <div class="card" ${cardStyle}>
+                ${strikethroughHtml}
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; position: relative; z-index: 11; gap: 8px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 6px; flex-wrap: wrap;">
+                        <div style="font-size: 16px; font-weight: 800; color: #065f46; white-space: nowrap;">🧑‍💼 ${formatPhoneNumber(c.client_phone) || '연락처 없음'}</div>
+                        <button onclick="copyClientToKakao('${c.id}', this)" style="background: #fee500; color: #371d1e; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; display: flex; align-items: center; gap: 2px; white-space: nowrap;">
+                            카톡 복사
+                        </button>
+                        ${c.status === '탐색중' ? 
+                            `<button onclick="closeClient('${c.id}')" style="background: #f3f4f6; color: #4b5563; border: 1px solid #d1d5db; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap;">종결</button>`
+                            : 
+                            `<button onclick="reopenClient('${c.id}')" style="background: #dcfce7; color: #166534; border: 1px solid #bbf7d0; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap;">탐색중 전환</button>`
+                        }
+                        <button onclick="openClientModal('${c.id}')" style="background: #f1f5f9; color: #475569; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap;">수정</button>
+                        <button onclick="deleteClient('${c.id}')" style="background: #fee2e2; color: #b91c1c; border: none; padding: 4px 6px; border-radius: 6px; font-weight: 700; font-size: 11px; cursor: pointer; white-space: nowrap;">삭제</button>
+                    </div>
+                    ${statusBadge}
+                </div>
+                <div style="margin-bottom: 8px;">${typeChips}</div>
+
+            ${(function() {
+                let html = '';
+                if (c.schedules && c.schedules.length > 0) {
+                    const showings = c.schedules.filter(s => s.schedule_type === '집보여주기' && s.memo && s.memo.includes('[DONE]'));
+                    if (showings.length > 0) {
+                        html += `<div style="margin-top: 12px; margin-bottom: 12px; padding: 12px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px;">`;
+                        html += `<div style="font-size: 13px; font-weight: 800; color: #475569; margin-bottom: 8px; display: flex; align-items: center; gap: 4px;">🏠 보여준 집 내역 (${showings.length}건)</div>`;
+                        html += `<ul style="margin: 0; padding-left: 20px; font-size: 13px; color: #1e293b; line-height: 1.6;">`;
+                        showings.sort((a, b) => new Date(b.schedule_date) - new Date(a.schedule_date)).forEach(s => {
+                            let bName = s.buildings ? s.buildings.road_address : '주소 알 수 없음';
+                            if (s.buildings && s.buildings.jibun_address) bName += ` (${s.buildings.jibun_address})`;
+                            let rName = s.rooms && s.rooms.room_name ? s.rooms.room_name : '';
+                            let dStr = s.schedule_date ? s.schedule_date.substring(5).replace('-', '/') : '';
+                            html += `<li><strong>${bName} ${rName}</strong> <span style="color: #64748b; font-size: 12px;">(${dStr} 완료)</span></li>`;
+                        });
+                        html += `</ul></div>`;
+                    }
+                }
+                return html;
+            })()}
+                <div style="font-size: 14px; font-weight: 700; color: #0f172a; margin-bottom: 4px;">💰 예산: ${budgetStr}</div>
+                <div style="font-size: 14px; font-weight: 700; color: #4f46e5; margin-bottom: 6px;">${occStr}</div>
+                ${reqs.length > 0 ? `<div style="font-size: 13px; font-weight: 600; color: #ef4444; margin-bottom: 8px;">⚠️ 조건: ${reqs.join(' · ')}</div>` : ''}
+                ${c.memo ? `<div style="font-size: 13px; color: #475569; margin-bottom: 12px;">📝 ${c.memo.replace(/\\[SETTLED_DATE\\].*?\\[\\/SETTLED_DATE\\]/g, '').trim()}</div>` : ''}
+                
+                ${matches.length > 0 ? `
+                <button type="button" onclick="showMatchesForClient('${c.id}')" style="width: 100%; margin-top: 12px; padding: 10px; border-radius: 8px; font-size: 13px; font-weight: 800; border: 1px dashed #3b82f6; background: #eff6ff; color: #2563eb; cursor: pointer; transition: 0.2s; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">
+                    🔍 맞춤 매물 찾기 (${matches.length}건 매칭)
+                </button>
+                ` : `<div style="font-size: 12px; color: #94a3b8; margin-top: 12px; text-align: center; padding: 10px; background: #f8fafc; border-radius: 8px; border: 1px dashed #cbd5e1;">조건에 딱 맞는 매물이 아직 없습니다.</div>`}
+            </div>
+            `;
+        });
+        list.innerHTML = html;
+    }
+
+    function copyClientToKakao(id, btnElem) {
+        const c = clientsData.find(client => client.id === id);
+        if (!c) return;
+
+        let budgetStr = `최대 ${formatMoney(c.max_budget)}`;
+        if (c.max_monthly) budgetStr += ` (월세 최대 ${c.max_monthly}만)`;
+
+        let c_rooms_tag = '';
+        if (c.memo && c.memo.includes('[ROOM:')) {
+            const match = c.memo.match(/\[ROOM:(.*?)\]/);
+            if (match) c_rooms_tag = match[1];
+        }
+        let reqs = [];
+        if (c_rooms_tag) {
+            reqs.push(`🚪${c_rooms_tag}`);
+        } else if (c.min_room_count) {
+            reqs.push(`방 ${c.min_room_count}개 이상`);
+        }
+        if (c.memo && c.memo.includes('[NEED_OPTION]')) reqs.push('📺풀옵션 필수');
+        if (c.need_pet) reqs.push('🐶반려동물 가능');
+        if (c.need_parking) reqs.push('🚗주차 필수');
+        if (c.need_loan || c.need_loan_sh_lh) reqs.push('🏦대출 가능해야 함');
+        if (c.need_lh_sh) reqs.push('🏢LH/SH 가능해야 함');
+        if (c.need_exclude_basement) reqs.push('🚫지층 제외');
+
+        let occStr = c.occupancy_type || '무관';
+        if (c.occupancy_type === '날짜확정' && c.occupancy_date) occStr = `📅 ${c.occupancy_date} 입주확정`;
+        if (c.occupancy_type === '시기조정가능' && c.occupancy_period_memo) occStr = `📅 시기조정 (${c.occupancy_period_memo})`;
+        if (c.occupancy_type === '무관') occStr = '📅 입주시기 무관';
+
+        const realtorName = window.currentUser?.name || '공인중개사사무소';
+        const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
+        const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
+
+        // 카톡 전송용 블라인드 처리 (메모의 개인정보 등)
+        let memoClean = c.memo ? c.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[NEED_OPTION\]/g, '').trim() : '';
+        let safeMemo = memoClean ? memoClean.replace(/010[-.\s]?[0-9]{4}[-.\s]?[0-9]{4}/g, '010-****-****').replace(/(비번|비밀번호|현관|도어락)[^\d]*[0-9]{3,}/g, '$1 ****') : '없음';
+
+        const text = `🏡 [공동중개 의뢰]
+손님께서 찾으시는 조건입니다. 조건에 맞는 매물 있으시면 편하게 연락 부탁드립니다! 🙏
+
+▪️ 찾는 거래: ${(c.target_types || []).join(', ')}
+▪️ 예산: ${budgetStr}
+▪️ 입주 시기: ${occStr}
+▪️ 필요 조건: ${reqs.length > 0 ? reqs.join(', ') : '특별한 조건 없음'}
+▪️ 추가 코멘트: ${safeMemo}
+
+언제든 편하게 연락 주세요! 😊
+📞 신대림공인중개사사무소 ${realtorName}${phoneStr}
+
+📲 중개사 전용 장부 앱(무료): ${window.location.origin}`;
+
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess(btnElem);
+            }).catch(err => {
+                fallbackCopyTextToClipboard(text, btnElem);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text, btnElem);
+        }
+    }
+
+    function copyPropertyToKakao(id, btnElem) {
+        const p = propertiesData.find(prop => prop.id === id);
+        if (!p) return;
+
+        let priceStr = [];
+        if (p.deal_types && p.deal_types.includes('매매') && p.sale_price && p.deposit) {
+            let actualInvest = p.sale_price - p.deposit;
+            let subStr = `실투 ${formatMoney(actualInvest)}`;
+            if (p.monthly_rent) subStr += ` / 월 ${p.monthly_rent}만`;
+            if (p.occupancy_date) subStr += ` 만기 ${p.occupancy_date}`;
+            priceStr.push(`매도 ${formatMoney(p.sale_price)} (${subStr})`);
+        } else {
+            if (p.sale_price) priceStr.push(`매도 ${formatMoney(p.sale_price)}`);
+            if (p.deposit && !p.monthly_rent) priceStr.push(`전세 ${formatMoney(p.deposit)}`);
+            if (p.deposit && p.monthly_rent) priceStr.push(`월세 ${formatMoney(p.deposit)}/${p.monthly_rent}`);
+        }
+        
+        let p_rooms_tag = '';
+        if (p.memo && p.memo.includes('[ROOM:')) {
+            const match = p.memo.match(/\[ROOM:(.*?)\]/);
+            if (match) p_rooms_tag = match[1];
+        }
+        let opts = [];
+        if (p_rooms_tag) {
+            opts.push(`🚪${p_rooms_tag}`);
+        } else if (p.room_count) {
+            opts.push(`방 ${p.room_count}개`);
+        }
+        if (p.memo && p.memo.includes('[HAS_OPTION]')) opts.push('📺풀옵션');
+        if (p.pet_allowed) opts.push('반려동물 가능');
+        if (p.parking_allowed) opts.push('주차 가능');
+        if (p.loan_allowed || p.lh_sh_allowed) opts.push('대출 가능');
+        if (p.lh_sh_allowed) opts.push('LH/SH 가능');
+        if (p.is_basement) opts.push('지층(반지하)');
+        
+        let occStr = p.occupancy_type || '입주시기 미정';
+        if ((p.occupancy_type === '날짜확정' || p.occupancy_type === '날짜협의') && p.occupancy_date) {
+            occStr += ` (${p.occupancy_date})`;
+        }
+        if (p.occupancy_type === '즉시입주') occStr = '즉시 입주 가능';
+
+        const realtorName = window.currentUser?.name || '공인중개사사무소';
+        const realtorPhone = formatPhoneNumber(window.currentUser?.phone) || '';
+        const phoneStr = realtorPhone ? ` (${realtorPhone})` : '';
+
+        // 카톡 전송용 블라인드 처리 (주소의 숫자, 메모의 개인정보 등)
+        let safeAddress = p.address ? p.address.replace(/[0-9]+/g, 'O') : '';
+        let memoClean = p.memo ? p.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[HAS_OPTION\]/g, '').trim() : '';
+        let safeMemo = memoClean ? memoClean.replace(/010[-.\s]?[0-9]{4}[-.\s]?[0-9]{4}/g, '010-****-****').replace(/(비번|비밀번호|현관|도어락)[^\d]*[0-9]{3,}/g, '$1 ****') : '없음';
+
+        const text = `🏡 [추천 매물 안내]
+손님께서 찾으시는 조건의 매물입니다!
+
+▪️ 종류: ${(p.deal_types || []).join(', ')}
+${safeAddress ? `▪️ 위치: ${safeAddress}\n` : ''}▪️ 금액: ${priceStr.join(' / ')}
+▪️ 특징: ${opts.length > 0 ? opts.join(', ') : '특징 없음'}
+▪️ 입주: ${occStr}
+▪️ 코멘트: ${safeMemo}
+
+언제든 편하게 연락 주세요! 😊
+📞 신대림공인중개사사무소 ${realtorName}${phoneStr}
+
+📲 중개사 전용 장부 앱(무료): ${window.location.origin}`;
+
+        // 복사 수행
+        if (navigator.clipboard && window.isSecureContext) {
+            navigator.clipboard.writeText(text).then(() => {
+                showCopySuccess(btnElem);
+            }).catch(err => {
+                fallbackCopyTextToClipboard(text, btnElem);
+            });
+        } else {
+            fallbackCopyTextToClipboard(text, btnElem);
+        }
+    }
+
+    function fallbackCopyTextToClipboard(text, btnElem) {
+        let textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        try {
+            let successful = document.execCommand('copy');
+            if (successful) showCopySuccess(btnElem);
+            else alert('복사에 실패했습니다.');
+        } catch (err) {
+            alert('복사를 지원하지 않는 브라우저입니다.');
+        }
+        document.body.removeChild(textArea);
+    }
+
+    function showCopySuccess(btnElem) {
+        const originalText = btnElem.innerHTML;
+        btnElem.innerHTML = '✅ 복사완료';
+        btnElem.style.background = '#e2e8f0';
+        setTimeout(() => {
+            btnElem.innerHTML = originalText;
+            btnElem.style.background = '#fee500';
+        }, 2000);
+    }
+
+    async function saveProperty() {
+        const checkedTypes = Array.from(document.querySelectorAll('input[name="p_type"]:checked')).map(el => el.value);
+        if (checkedTypes.length === 0) { alert('거래 종류를 선택해주세요.'); return; }
+        
+        const addrMain = document.getElementById('p_address_main').value.trim();
+        const addrDetail = document.getElementById('p_address_detail').value.trim();
+        const nickname = document.getElementById('p_nickname').value.trim();
+        const fullAddress = (addrMain ? addrMain + ' ' : '') + addrDetail;
+        const pid = document.getElementById('p_id').value;
+
+        let types = [];
+        if (checkedTypes.includes('매매')) types.push('매매');
+        if (checkedTypes.includes('전월세')) {
+            const rentVal = document.getElementById('p_rent').value ? parseInt(document.getElementById('p_rent').value) : 0;
+            if (rentVal === 0) {
+                types.push('전세');
+            } else {
+                types.push('월세');
+            }
+        }
+
+        const roomType = document.getElementById('p_room').value;
+        let p_room_num = null;
+        if (roomType) {
+            let match = roomType.match(/\d+/);
+            if (match) p_room_num = parseInt(match[0]);
+        }
+
+        const deposit = document.getElementById('p_dep').value ? parseInt(document.getElementById('p_dep').value) : null;
+        if (deposit !== null && deposit <= 500) {
+            if (!confirm(`보증금이 ${deposit}만원으로 입력되었습니다. 단위(만원) 착오가 없는지 확인해주세요. 이대로 진행할까요?`)) return;
+        }
+
+        let bId = document.getElementById('p_building_id').value;
+        let rId = document.getElementById('p_room_id').value;
+
+        // 마스터 주소 풀 연동: 선택하지 않고 직접 주소를 입력한 경우 (신규 건물)
+        if (!bId && addrMain) {
+            let road = addrMain.replace(/\[지번:.*?\]/g, '').trim();
+            let jibun = '';
+            const match = addrMain.match(/\[지번:\s*(.*?)\]/);
+            if (match) jibun = match[1];
+
+            const { data: newB, error: errB } = await supabaseClient.from('buildings').insert({
+                user_id: window.currentUser.id, office_id: window.currentUser.office_id,
+                road_address: road,
+                jibun_address: jibun || null
+            }).select();
+
+            if (errB) {
+                if (errB.message.includes('unique_user_road_address') || errB.code === '23505') {
+                    const { data: existingB } = await supabaseClient.from('buildings')
+                        .select('id')
+                        .eq('road_address', road)
+                        .eq('office_id', window.currentUser.office_id)
+                        .limit(1);
+                    if (existingB && existingB.length > 0) {
+                        bId = existingB[0].id;
+                    } else {
+                        alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return;
+                    }
+                } else {
+                    alert('새 건물 풀(Pool) 등록 실패: ' + errB.message); return;
+                }
+            } else if (newB && newB.length > 0) {
+                bId = newB[0].id;
+            }
+
+            if (bId) {
+                // 호수도 기본 생성 (건물전체 혹은 상세주소)
+                const roomName = addrDetail || '건물전체';
+                const { data: existingR } = await supabaseClient.from('rooms')
+                    .select('id')
+                    .eq('building_id', bId)
+                    .eq('room_name', roomName)
+                    .eq('office_id', window.currentUser.office_id)
+                    .limit(1);
+                
+                if (existingR && existingR.length > 0) {
+                    rId = existingR[0].id;
+                } else {
+                    const { data: newR, error: errR } = await supabaseClient.from('rooms').insert({
+                        user_id: window.currentUser.id, office_id: window.currentUser.office_id,
+                        building_id: bId,
+                        room_name: roomName
+                    }).select();
+                    
+                    if (!errR && newR && newR.length > 0) {
+                        rId = newR[0].id;
+                    }
+                }
+            }
+        }
+
+        const payload = {
+            user_id: window.currentUser.id, office_id: window.currentUser.office_id,
+            building_id: bId || null,
+            room_id: rId || null,
+            address: fullAddress || null,
+            nickname: nickname || null,
+            owner_phone: document.getElementById('p_owner_phone').value.trim() || null,
+            tenant_phone: document.getElementById('p_tenant_phone').value.trim() || null,
+            deal_types: types,
+            sale_price: document.getElementById('p_sale').value ? parseInt(document.getElementById('p_sale').value) : null,
+            deposit: deposit,
+            monthly_rent: document.getElementById('p_rent').value ? parseInt(document.getElementById('p_rent').value) : null,
+            room_count: p_room_num,
+            pet_allowed: document.getElementById('p_pet').checked,
+            parking_allowed: document.getElementById('p_parking').checked,
+            loan_allowed: document.getElementById('p_loan').checked,
+            lh_sh_allowed: document.getElementById('p_lh').checked,
+            is_basement: document.getElementById('p_basement').checked,
+            occupancy_type: document.getElementById('p_occ_type').value,
+            occupancy_date: document.getElementById('p_occ_date').value || null,
+            memo: (function(){
+                let m = document.getElementById('p_memo').value;
+                m = m.replace(/\[ROOM:.*?\]/g, '').replace(/\[HAS_OPTION\]/g, '').trim();
+                const roomType = document.getElementById('p_room').value;
+                if (document.getElementById('p_option').checked) m = '[HAS_OPTION]\n' + m;
+                if (roomType) m = `[ROOM:${roomType}]\n` + m;
+                return m.trim();
+            })()
+        };
+        
+        if (pid) {
+            payload.status = document.getElementById('p_status').value;
+        } else {
+            payload.status = '거래가능';
+        }
+
+        let error;
+        if (pid) {
+            const res = await supabaseClient.from('properties').update(payload).eq('id', pid);
+            error = res.error;
+        } else {
+            const res = await supabaseClient.from('properties').insert(payload);
+            error = res.error;
+        }
+
+        if (error) { alert('저장 실패: ' + error.message); return; }
+        
+        document.getElementById('propModal').style.display = 'none';
+        alert(pid ? '매물이 수정되었습니다.' : '매물이 등록되었습니다.');
+        loadData();
+    }
+
+    async function closeProperty(id) {
+        if (!confirm('이 매물을 거래종료(종결) 상태로 변경하시겠습니까?\n매칭에서 제외되지만 데이터는 보존됩니다.')) return;
+        const { error } = await supabaseClient.from('properties').update({ status: '거래종료' }).eq('id', id);
+        if (error) {
+            alert('종결 처리 실패: ' + error.message);
+            return;
+        }
+        loadData();
+    }
+    
+    async function reopenProperty(id) {
+        if (!confirm('이 매물을 다시 거래가능 상태로 복구하시겠습니까?')) return;
+        const { error } = await supabaseClient.from('properties').update({ status: '거래가능' }).eq('id', id);
+        if (error) {
+            alert('복구 처리 실패: ' + error.message);
+            return;
+        }
+        loadData();
+    }
+
+    async function deleteProperty(id) {
+        const p = propertiesData.find(x => x.id === id);
+        if (!p) return;
+        const confirmText = prompt(`정말 이 매물 기록을 삭제하시겠습니까?\n삭제하시려면 '삭제'라고 입력해주세요.\n(매물 주소: ${p.address || '주소없음'})`);
+        if (confirmText !== '삭제') {
+            if (confirmText !== null) alert('입력이 일치하지 않아 취소되었습니다.');
+            return;
+        }
+        
+        const { error } = await supabaseClient.from('properties').delete().eq('id', id);
+        if (error) {
+            alert('삭제 실패: ' + error.message);
+            return;
+        }
+        alert('삭제되었습니다.');
+        loadData();
+    }
+
+    function openPropModal(id = null) {
+        const modal = document.getElementById('propModal');
+        const title = modal.querySelector('.modal-header h3');
+        const formIds = ['p_id', 'p_address_main', 'p_address_detail', 'p_nickname', 'p_building_id', 'p_room_id', 'p_owner_phone', 'p_tenant_phone', 'p_sale', 'p_dep', 'p_rent', 'p_room', 'p_pet', 'p_parking', 'p_loan', 'p_lh', 'p_basement', 'p_occ_date', 'p_memo'];
+        
+        formIds.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (!el) return;
+            if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+            else el.value = '';
+        });
+        document.querySelectorAll('input[name="p_type"]').forEach(el => el.checked = false);
+        document.getElementById('p_occ_type').value = '입주시기 미정';
+        
+        if (window.propAddressTomSelect) {
+            window.propAddressTomSelect.clear(true);
+        }
+
+        if (id) {
+            title.innerText = '🏢 매물 정보 수정';
+            const p = propertiesData.find(x => x.id === id);
+            if (p) {
+                document.getElementById('p_id').value = p.id;
+                document.getElementById('p_building_id').value = p.building_id || '';
+                document.getElementById('p_room_id').value = p.room_id || '';
+                
+                if (window.propAddressTomSelect && p.building_id) {
+                    window.propAddressTomSelect.setValue(p.building_id + '|' + (p.room_id || ''), true);
+                }
+
+                // Parse address loosely
+                let addrMain = p.address || '';
+                let addrDetail = '';
+                // simplistic split if there's a space followed by a number/dong/ho
+                const lastSpace = addrMain.lastIndexOf(' ');
+                if (lastSpace > 0 && /\d/.test(addrMain.substring(lastSpace))) {
+                    addrDetail = addrMain.substring(lastSpace + 1);
+                    addrMain = addrMain.substring(0, lastSpace);
+                }
+                document.getElementById('p_address_main').value = addrMain;
+                document.getElementById('p_address_detail').value = addrDetail;
+                document.getElementById('p_nickname').value = p.nickname || '';
+                
+                document.getElementById('p_owner_phone').value = p.owner_phone || '';
+                document.getElementById('p_tenant_phone').value = p.tenant_phone || '';
+                
+                if (p.deal_types.includes('매매')) document.querySelector('input[name="p_type"][value="매매"]').checked = true;
+                if (p.deal_types.includes('전세') || p.deal_types.includes('월세')) document.querySelector('input[name="p_type"][value="전월세"]').checked = true;
+                
+                if (p.sale_price) document.getElementById('p_sale').value = p.sale_price;
+                if (p.deposit) document.getElementById('p_dep').value = p.deposit;
+                if (p.monthly_rent) document.getElementById('p_rent').value = p.monthly_rent;
+                if (p.memo && p.memo.includes('[ROOM:')) {
+                    const m = p.memo.match(/\[ROOM:(.*?)\]/);
+                    if (m) document.getElementById('p_room').value = m[1];
+                } else if (p.room_count) {
+                    let rText = '방' + p.room_count;
+                    if (p.room_count >= 4) rText = '방4 이상';
+                    const el = document.querySelector(`#p_room option[value^="${rText}"]`);
+                    if (el) document.getElementById('p_room').value = el.value;
+                    else document.getElementById('p_room').value = '';
+                } else {
+                    document.getElementById('p_room').value = '';
+                }
+                
+                document.getElementById('p_option').checked = !!(p.memo && p.memo.includes('[HAS_OPTION]'));
+                document.getElementById('p_pet').checked = !!p.pet_allowed;
+                document.getElementById('p_parking').checked = !!p.parking_allowed;
+                document.getElementById('p_loan').checked = !!p.loan_allowed;
+                document.getElementById('p_lh').checked = !!p.lh_sh_allowed;
+                document.getElementById('p_basement').checked = !!p.is_basement;
+                
+                if (p.occupancy_type) document.getElementById('p_occ_type').value = p.occupancy_type;
+                if (p.occupancy_date) document.getElementById('p_occ_date').value = p.occupancy_date;
+                if (p.memo) document.getElementById('p_memo').value = p.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[HAS_OPTION\]/g, '').trim();
+                else document.getElementById('p_memo').value = '';
+                document.getElementById('p_status').value = p.status || '거래가능';
+                document.getElementById('wrap_p_status').style.display = 'block';
+            }
+        } else {
+            title.innerText = '🏢 새 매물 등록';
+            document.getElementById('wrap_p_status').style.display = 'none';
+        }
+        togglePriceFields();
+        togglePropOcc();
+        modal.style.display = 'flex';
+    }
+
+    async function saveClient() {
+        const phone = document.getElementById('c_phone').value.trim();
+        const cid = document.getElementById('c_id').value;
+        
+        if (!phone) { alert('손님 연락처를 입력해주세요.'); return; }
+        const name = ''; // DB 호환용 빈 문자열
+        
+        const types = Array.from(document.querySelectorAll('input[name="c_type"]:checked')).map(el => el.value);
+        if (types.length === 0) { alert('찾으시는 거래 종류를 선택해주세요.'); return; }
+
+        const payload = {
+            user_id: window.currentUser.id, office_id: window.currentUser.office_id,
+            client_name: name,
+            client_phone: phone,
+            target_types: types,
+            max_budget: document.getElementById('c_budget').value ? parseInt(document.getElementById('c_budget').value) : null,
+            min_budget: document.getElementById('c_min_budget').value ? parseInt(document.getElementById('c_min_budget').value) : null,
+            max_monthly: document.getElementById('c_rent').value ? parseInt(document.getElementById('c_rent').value) : null,
+            min_room_count: (function(){
+                const c_room_types = Array.from(document.querySelectorAll('input[name="c_room_type"]:checked')).map(el => el.value);
+                if (c_room_types.length > 0) {
+                    let nums = c_room_types.map(t => { let m = t.match(/\d+/); return m ? parseInt(m[0]) : 99; });
+                    let c_room_num = Math.min(...nums);
+                    return c_room_num === 99 ? null : c_room_num;
+                }
+                return null;
+            })(),
+            need_pet: document.getElementById('c_pet').checked,
+            need_parking: document.getElementById('c_parking').checked,
+            need_loan: document.getElementById('c_loan').checked,
+            need_lh_sh: document.getElementById('c_lh').checked,
+            need_exclude_basement: document.getElementById('c_exclude_basement').checked,
+            occupancy_type: document.getElementById('c_occ_type').value,
+            occupancy_date: document.getElementById('c_occ_date').value || null,
+            occupancy_period_memo: document.getElementById('c_occ_memo').value,
+            memo: (function(){
+                let m = document.getElementById('c_memo').value;
+                m = m.replace(/\[ROOM:.*?\]/g, '').replace(/\[NEED_OPTION\]/g, '').trim();
+                const types = Array.from(document.querySelectorAll('input[name="c_room_type"]:checked')).map(el=>el.value);
+                if (document.getElementById('c_option').checked) m = '[NEED_OPTION]\n' + m;
+                if (types.length > 0) m = `[ROOM:${types.join(',')}]\n` + m;
+                return m.trim();
+            })()
+        };
+        
+        if (cid) {
+            payload.status = document.getElementById('c_status').value;
+        } else {
+            payload.status = '탐색중';
+        }
+
+        let error;
+        if (cid) {
+            const res = await supabaseClient.from('client_requests').update(payload).eq('id', cid);
+            error = res.error;
+        } else {
+            const res = await supabaseClient.from('client_requests').insert(payload);
+            error = res.error;
+        }
+
+        if (error) { alert('저장 실패: ' + error.message); return; }
+        
+        document.getElementById('clientModal').style.display = 'none';
+        alert(cid ? '손님 정보가 수정되었습니다.' : '손님 조건이 등록되었습니다.');
+        loadData();
+    }
+
+    async function closeClient(id) {
+        if (!confirm('이 손님을 변심/종료(종결) 상태로 변경하시겠습니까?\n매칭에서 제외되지만 데이터는 보존됩니다.')) return;
+        const { error } = await supabaseClient.from('client_requests').update({ status: '변경/종료' }).eq('id', id);
+        if (error) {
+            alert('종결 처리 실패: ' + error.message);
+            return;
+        }
+        loadData();
+    }
+    
+    async function reopenClient(id) {
+        if (!confirm('이 손님을 다시 탐색중 상태로 복구하시겠습니까?')) return;
+        const { error } = await supabaseClient.from('client_requests').update({ status: '탐색중' }).eq('id', id);
+        if (error) {
+            alert('복구 처리 실패: ' + error.message);
+            return;
+        }
+        loadData();
+    }
+
+    async function deleteClient(id) {
+        const c = clientsData.find(x => x.id === id);
+        if (!c) return;
+        
+        // Extract numbers from phone for easier typing
+        const phoneNumbersOnly = (c.client_phone || '').replace(/[^0-9]/g, '');
+        const last4 = phoneNumbersOnly.slice(-4);
+        
+        const confirmText = prompt(`정말 이 손님 기록을 삭제하시겠습니까?\n삭제하시려면 손님 연락처 뒷 4자리(${last4})를 입력해주세요.\n(전화번호 없는 손님은 '삭제' 입력)`);
+        
+        if (last4) {
+            if (confirmText !== last4) {
+                if (confirmText !== null) alert('입력한 번호가 일치하지 않아 취소되었습니다.');
+                return;
+            }
+        } else {
+            if (confirmText !== '삭제') {
+                if (confirmText !== null) alert('입력이 일치하지 않아 취소되었습니다.');
+                return;
+            }
+        }
+        
+        const { error } = await supabaseClient.from('client_requests').delete().eq('id', id);
+        if (error) {
+            alert('삭제 실패: ' + error.message);
+            return;
+        }
+        alert('삭제되었습니다.');
+        loadData();
+    }
+
+    function openClientModal(id = null) {
+        const modal = document.getElementById('clientModal');
+        const title = modal.querySelector('.modal-header h3');
+        const formIds = ['c_id', 'c_phone', 'c_min_budget', 'c_budget', 'c_rent', 'c_room', 'c_pet', 'c_parking', 'c_loan', 'c_lh', 'c_exclude_basement', 'c_occ_date', 'c_occ_memo', 'c_memo'];
+        
+        formIds.forEach(fid => {
+            const el = document.getElementById(fid);
+            if (!el) return;
+            if (el.type === 'checkbox' || el.type === 'radio') el.checked = false;
+            else el.value = '';
+        });
+        document.querySelectorAll('input[name="c_type"]').forEach(el => el.checked = false);
+        document.getElementById('c_occ_type').value = '무관';
+
+        if (id) {
+            title.innerText = '🧑‍💼 손님 조건 수정';
+            const c = clientsData.find(x => x.id === id);
+            if (c) {
+                document.getElementById('c_id').value = c.id;
+                document.getElementById('c_phone').value = c.client_phone || '';
+                c.target_types.forEach(t => {
+                    const cb = document.querySelector(`input[name="c_type"][value="${t}"]`);
+                    if (cb) cb.checked = true;
+                });
+                if (c.max_budget) document.getElementById('c_budget').value = c.max_budget;
+                if (c.min_budget) document.getElementById('c_min_budget').value = c.min_budget;
+                if (c.max_monthly) document.getElementById('c_rent').value = c.max_monthly;
+                if (c.memo && c.memo.includes('[ROOM:')) {
+                    const m = c.memo.match(/\[ROOM:(.*?)\]/);
+                    if (m) {
+                        let selectedRooms = m[1].split(',');
+                        document.querySelectorAll('input[name="c_room_type"]').forEach(el => {
+                            el.checked = selectedRooms.includes(el.value);
+                        });
+                    }
+                } else {
+                    document.querySelectorAll('input[name="c_room_type"]').forEach(el => el.checked = false);
+                    if (c.min_room_count) {
+                        document.querySelectorAll('input[name="c_room_type"]').forEach(el => {
+                            let match = el.value.match(/\d+/);
+                            if (match && parseInt(match[0]) >= c.min_room_count) {
+                                el.checked = true;
+                            }
+                        });
+                    }
+                }
+                document.getElementById('c_option').checked = !!(c.memo && c.memo.includes('[NEED_OPTION]'));
+                document.getElementById('c_pet').checked = !!c.need_pet;
+                document.getElementById('c_parking').checked = !!c.need_parking;
+                document.getElementById('c_loan').checked = !!c.need_loan;
+                document.getElementById('c_lh').checked = !!c.need_lh_sh;
+                document.getElementById('c_exclude_basement').checked = !!c.need_exclude_basement;
+                if (c.occupancy_type) document.getElementById('c_occ_type').value = c.occupancy_type;
+                if (c.occupancy_date) document.getElementById('c_occ_date').value = c.occupancy_date;
+                if (c.occupancy_period_memo) document.getElementById('c_occ_memo').value = c.occupancy_period_memo;
+                if (c.memo) document.getElementById('c_memo').value = c.memo.replace(/\[ROOM:.*?\]/g, '').replace(/\[NEED_OPTION\]/g, '').trim();
+                else document.getElementById('c_memo').value = '';
+                document.getElementById('c_status').value = c.status || '탐색중';
+                document.getElementById('wrap_c_status').style.display = 'block';
+            }
+        } else {
+            title.innerText = '🧑‍💼 새 손님 조건 등록';
+            document.getElementById('wrap_c_status').style.display = 'none';
+        }
+        toggleClientPrice();
+        toggleClientOcc();
+        modal.style.display = 'flex';
+    }
+
+    let _qsClientId = null;
+    let _qsPropertyId = null;
+
+    function openQuickSchedule(bId, rId, clientPhone, clientId, pId) {
+        if (!bId) {
+            alert('이 매물은 아직 마스터 주소(건물)가 등록되지 않아 일정을 추가할 수 없습니다.\n매물 수정을 눌러서 주소를 다시 설정해주세요.');
+            return;
+        }
+        
+        _qsClientId = clientId || null;
+        _qsPropertyId = pId || null;
+        
+        document.getElementById('qs_building_id').value = bId;
+        document.getElementById('qs_room_id').value = rId;
+        
+        // 기본 시간을 현재 시간 기준 다음 정각으로 세팅
+        const now = new Date();
+        now.setHours(now.getHours() + 1);
+        now.setMinutes(0);
+        const yyyy = now.getFullYear();
+        const mm = String(now.getMonth() + 1).padStart(2, '0');
+        const dd = String(now.getDate()).padStart(2, '0');
+        const hh = String(now.getHours()).padStart(2, '0');
+        const min = String(now.getMinutes()).padStart(2, '0');
+        document.getElementById('qs_date').value = `${yyyy}-${mm}-${dd}T${hh}:${min}`;
+        
+        document.getElementById('qs_memo').value = '🧑‍💼 손님(' + clientPhone + ')과 집 보기 약속';
+        document.getElementById('quickScheduleModal').style.display = 'flex';
+    }
+
+    async function saveQuickSchedule() {
+        const bId = document.getElementById('qs_building_id').value;
+        const rId = document.getElementById('qs_room_id').value;
+        const dateVal = document.getElementById('qs_date').value;
+        const memo = document.getElementById('qs_memo').value;
+
+        if (!dateVal) {
+            alert('방문 일시를 선택해주세요.');
+            return;
+        }
+
+        const btn = document.querySelector('#quickScheduleModal .btn-primary');
+        btn.innerText = '저장 중...';
+        btn.disabled = true;
+
+        try {
+            const [datePart, timePart] = dateVal.split('T');
+            const timeStr = timePart ? `[${timePart}] ` : '';
+
+            const { error } = await supabaseClient.from('schedules').insert([{
+                building_id: bId,
+                room_id: rId || null,
+                schedule_type: '집보기',
+                schedule_date: datePart,
+                memo: timeStr + memo,
+                user_id: window.currentUser.id, 
+                office_id: window.currentUser.office_id
+            }]);
+
+            if (error) throw error;
+            
+            alert('일정 장부에 성공적으로 저장되었습니다!');
+            document.getElementById('quickScheduleModal').style.display = 'none';
+        } catch(e) {
+            console.error(e);
+            alert('저장 실패: ' + e.message);
+        } finally {
+            btn.innerText = '일정 장부에 저장하기';
+            btn.disabled = false;
+        }
+    }
+
+    async function checkAuthAndLoad() {
+        const user = await requireAuth();
+        if (user) {
+            document.getElementById('welcomeMessage').innerText = (user.name || '전문가') + '님 환영합니다!';
+            loadData();
+            loadBuildingsAndRooms();
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.get('tab') === 'clients') {
+                switchTab('clients');
+                if (urlParams.get('action') === 'new') {
+                    setTimeout(openClientModal, 500);
+                }
+            }
+        }
+    }
+    
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted || window.performance && window.performance.navigation.type === 2) {
+            checkAuthAndLoad();
+        }
+    });
+
+    window.showMatchesForClient = function(clientId) {
+        const c = clientsData.find(x => x.id === clientId);
+        if (!c) return;
+        
+        const matches = propertiesData.filter(p => isMatch(p, c));
+        const title = document.getElementById('matchingModalTitle').querySelector('span');
+        title.innerText = '🔍 ' + (formatPhoneNumber(c.client_phone) || '이름없음') + '님 맞춤 매물';
+        
+        const body = document.getElementById('matchingModalBody');
+        if (matches.length > 0) {
+            body.innerHTML = matches.map(m => createPropertyCard(m, true, c)).join('');
+        } else {
+            body.innerHTML = '<div style="text-align: center; color: #94a3b8; margin-top: 20px;">조건에 맞는 매물이 아직 없습니다.</div>';
+        }
+        
+        document.getElementById('matchingModal').style.display = 'flex';
+    };
+
+    window.showMatchesForProperty = function(propertyId) {
+        const p = propertiesData.find(x => x.id === propertyId);
+        if (!p) return;
+        
+        const matchedClients = clientsData.filter(c => isMatch(p, c));
+        
+        let titleText = '🤝 ';
+        if (p.address) {
+            const jibunRegex = /^(.*?)\\s*\\[지번:\\s*(.*?)\\]\\s*(.*)$/;
+            const match = p.address.match(jibunRegex);
+            titleText += match ? match[2].trim() + ' ' + match[3].trim() : p.address;
+        } else {
+            titleText += '매수/임차 희망 손님';
+        }
+        
+        const title = document.getElementById('matchingModalTitle').querySelector('span');
+        title.innerText = titleText;
+        
+        const body = document.getElementById('matchingModalBody');
+        if (matchedClients.length > 0) {
+            let matchHtml = matchedClients.map(c => {
+                const viewedList = c.viewed_properties || [];
+                const viewedItem = viewedList.find(v => v.property_id === p.id);
+                const isViewed = !!viewedItem && !viewedItem.is_rejected;
+                const isRejected = !!viewedItem && viewedItem.is_rejected;
+                
+                let cHtml = '<div style="display: flex; justify-content: space-between; align-items: center; background: ' + (isViewed ? '#f1f5f9' : '#fff') + '; border: 1px solid ' + (isViewed ? '#cbd5e1' : '#bae6fd') + '; padding: 12px; border-radius: 8px; font-size: 13px; cursor: pointer; transition: 0.2s; ' + (isRejected ? 'opacity: 0.5; text-decoration: line-through;' : '') + '" onclick="document.getElementById(\'matchingModal\').style.display=\'none\'; switchTab(\'clients\'); setClientFilter(\'탐색중\', null); setTimeout(() => openClientModal(\'' + c.id + '\'), 100);">' +
+                    '<div style="display: flex; flex-direction: column; gap: 4px;">' +
+                        '<span style="font-weight: 800; color: #0f172a; font-size: 14px;">🧑‍💼 ' + formatPhoneNumber(c.client_phone) + '</span>' +
+                        '<span style="color: #64748b; font-size: 12px; font-weight: 600;">💰 예산 최대 ' + formatMoney(c.max_budget) + '</span>' +
+                    '</div>' +
+                    '<div style="display: flex; align-items: center; gap: 8px;" onclick="event.stopPropagation()">';
+                
+                if (isRejected) {
+                    cHtml += '<button type="button" onclick="undoRejectProperty(\'' + c.id + '\', \'' + p.id + '\')" style="font-size: 12px; color: #64748b; font-weight: 700; background: white; border: 1px solid #cbd5e1; padding: 4px 8px; border-radius: 6px; cursor: pointer;">취소</button>';
+                    cHtml += '<span style="font-size: 12px; color: #ef4444; font-weight: 800; background: #fee2e2; padding: 4px 8px; border-radius: 6px;">안봄</span>';
+                } else if (isViewed) {
+                    cHtml += '<span style="font-size: 12px; color: #10b981; font-weight: 800; background: #dcfce7; padding: 4px 8px; border-radius: 6px;">보여줌</span>';
+                } else {
+                    cHtml += '<button type="button" onclick="rejectProperty(\'' + c.id + '\', \'' + p.id + '\')" style="font-size: 12px; color: #ef4444; font-weight: 700; background: white; border: 1px solid #ef4444; padding: 4px 8px; border-radius: 6px; cursor: pointer;">거절</button>';
+                }
+                cHtml += '</div></div>';
+                return cHtml;
+            }).join('');
+            body.innerHTML = matchHtml;
+        } else {
+            body.innerHTML = '<div style="text-align: center; color: #94a3b8; margin-top: 20px;">조건에 딱 맞는 손님이 아직 없습니다.</div>';
+        }
+        
+        document.getElementById('matchingModal').style.display = 'flex';
+    };
+
+    checkAuthAndLoad();
+</script>
+<!-- 매칭 결과 모달 -->
+<div id="matchingModal" class="modal-overlay">
+    <div class="modal-content" style="max-height: 80vh; display: flex; flex-direction: column; width: 90%; max-width: 500px; padding: 20px;">
+        <h3 id="matchingModalTitle" style="margin-top:0; margin-bottom:12px; color:#1e293b; display: flex; align-items: center; justify-content: space-between;">
+            <span style="font-size: 18px; font-weight: 800;">✨ 매칭 결과</span>
+            <button onclick="document.getElementById('matchingModal').style.display='none'" style="background:none; border:none; font-size:24px; cursor:pointer; color:#94a3b8; padding: 0; line-height: 1;">&times;</button>
+        </h3>
+        <div id="matchingModalBody" style="flex: 1; overflow-y: auto; padding-right: 4px; margin-top: 4px; display: flex; flex-direction: column; gap: 8px;">
+            <!-- 매칭 내용 렌더링 -->
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+

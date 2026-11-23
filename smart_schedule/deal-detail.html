@@ -1,0 +1,655 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>일정 상세</title>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+
+    <style>
+        @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable.min.css');
+
+        body {
+            font-family: 'Pretendard Variable', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+            background-color: #f3f4f6;
+            padding: 24px 16px;
+            max-width: 480px;
+            margin: auto;
+            color: #111827;
+        }
+
+        .card {
+            background-color: #ffffff;
+            border: 1px solid rgba(0, 0, 0, 0.05);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.04);
+        }
+
+        .title {
+            font-size: 22px;
+            font-weight: 800;
+            color: #111827;
+            margin-bottom: 20px;
+            letter-spacing: -0.5px;
+            border-bottom: 1px solid #f3f4f6;
+            padding-bottom: 12px;
+        }
+
+        .info-row {
+            display: flex;
+            align-items: flex-start;
+            margin-bottom: 14px;
+        }
+
+        .info-icon {
+            margin-right: 12px;
+            font-size: 18px;
+            color: #9ca3af;
+            margin-top: 1px;
+        }
+
+        .info {
+            font-size: 16px;
+            color: #4b5563;
+            line-height: 1.5;
+            word-break: keep-all;
+            flex: 1;
+        }
+
+        button {
+            width: 100%;
+            padding: 16px;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: 600;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        button:active {
+            transform: scale(0.98);
+        }
+
+        .btn-kakao {
+            background-color: #FEE500;
+            color: #000000;
+        }
+
+        .btn-primary {
+            background-color: #3b82f6;
+            color: white;
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        .btn-danger {
+            background-color: #fee2e2;
+            color: #ef4444;
+        }
+
+        #meterInfo {
+            background-color: #f8fafc;
+            border-radius: 12px;
+            padding: 16px;
+            margin-top: 20px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .app-footer {
+            margin-top: 40px;
+            padding-top: 24px;
+            border-top: 1px solid #e5e7eb;
+            text-align: center;
+            color: #9ca3af;
+            font-size: 12px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+
+        .app-footer strong {
+            color: #6b7280;
+            display: block;
+            margin-bottom: 4px;
+            font-size: 13px;
+        }
+    </style>
+
+
+    <link rel="icon" type="image/png" href="icon.png">
+    <link rel="apple-touch-icon" href="icon.png">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3b82f6">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+</head>
+
+<body>
+
+    <div class="card">
+        <div class="title" id="dealTitle"></div>
+        
+        <div class="info-row">
+            <div class="info-icon">📍</div>
+            <div class="info" id="address"></div>
+        </div>
+
+        <div class="info-row" id="pwdRow">
+            <div class="info-icon">🔑</div>
+            <div class="info" id="entrancePassword" style="color: #ef4444; font-weight: 600; cursor: pointer; display: flex; align-items: center; gap: 8px;" onclick="promptEditPassword()"></div>
+        </div>
+
+        <div class="info-row" id="clientRow" style="display: none;">
+            <div class="info-icon">🧑‍💼</div>
+            <div class="info" id="clientInfo" style="color: #10b981; font-weight: 700;"></div>
+        </div>
+
+        <div class="info-row" id="contactRow" style="display: none;">
+            <div class="info-icon">📞</div>
+            <div class="info" id="contact" style="color: #3b82f6; font-weight: 600;"></div>
+        </div>
+
+        <div class="info-row">
+            <div class="info-icon">📝</div>
+            <div class="info" id="memo"></div>
+        </div>
+
+        <div id="meterInfo" style="display: none;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <div style="font-weight: 700; color: #1e293b; font-size: 15px;">⚡ 최근 정산 입력정보</div>
+                    <div id="settleStatus"></div>
+                </div>
+                <div style="font-size: 12px; color: #4b5563; font-weight: normal; border: 1px solid #e5e7eb; background: #ffffff; padding: 4px 10px; border-radius: 6px; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);" onclick="goSettlement()">입력 / 수정</div>
+            </div>
+            <div id="meterData" style="font-size: 15px; color: #475569; line-height: 1.6;"></div>
+        </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; margin-top: 16px;">
+        <button type="button" class="btn-kakao" onclick="openKakaoMap()" style="margin-bottom: 0; border-radius: 14px; font-weight: 700; box-shadow: 0 4px 12px rgba(254, 229, 0, 0.4);">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg"><path d="M12 2C6.48 2 2 5.58 2 10C2 12.56 3.51 14.83 5.86 16.2L4.64 20.67C4.54 21.05 4.97 21.36 5.3 21.16L10.3 18.06C10.85 18.15 11.41 18.2 12 18.2C17.52 18.2 22 14.62 22 10.2C22 5.78 17.52 2 12 2Z"/></svg>
+            카카오맵 길찾기
+        </button>
+
+        <button type="button" id="btnComplete" class="btn-secondary" onclick="toggleComplete()" style="margin-bottom: 12px; border-radius: 14px; background-color: #dcfce7; border: 1px solid #bbf7d0; color: #16a34a; font-weight: 700;">
+            ✅ 일정 완료
+        </button>
+
+        <div style="display: flex; gap: 12px;">
+            <button class="btn-secondary" onclick="editDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #ffffff; border: 1px solid #e5e7eb; color: #4b5563; font-weight: 700;">
+                ✏️ 일정 수정
+            </button>
+            <button class="btn-danger" onclick="deleteDeal()" style="flex: 1; margin-bottom: 0; border-radius: 14px; background-color: #fff1f2; color: #e11d48; font-weight: 700; border: 1px solid #ffe4e6;">
+                🗑️ 일정 삭제
+            </button>
+        </div>
+
+        <button onclick="location.href='deal-register.html'" style="margin-bottom: 0; background: transparent; border: none; box-shadow: none; color: #6b7280; font-weight: 600; padding: 12px;">
+            ← 목록으로 돌아가기
+        </button>
+    </div>
+
+    <script src="auth-helper.js"></script>
+    <script>
+
+        const params =
+            new URLSearchParams(
+                window.location.search
+            );
+
+        const scheduleId =
+            params.get('id');
+
+        async function loadDeal() {
+
+            const { data, error } =
+                await supabaseClient
+                    .from('schedules')
+                    .select(`
+                        *,
+                        buildings (
+                            jibun_address,
+                            road_address,
+                            entrance_password
+                        ),
+                        rooms (
+                            room_name
+                        ),
+                        client_requests (
+                            client_phone,
+                            memo
+                        )
+                    `)
+                    .eq('id', scheduleId)
+                    .eq('office_id', window.currentUser.office_id)
+                    .single();
+
+            if (error) {
+                console.log(error);
+                return;
+            }
+
+            if (data && data.property_id) {
+                const { data: prop } = await supabaseClient.from('properties').select('address').eq('id', data.property_id).single();
+                if (prop) {
+                    data.properties = prop;
+                }
+            }
+
+            let rawMemo = data.memo || '';
+            let isDone = false;
+            if (rawMemo.includes('[DONE]')) {
+                isDone = true;
+                rawMemo = rawMemo.replace(/\[DONE\]/g, '');
+            }
+            window.currentDealIsDone = isDone;
+
+            let settledDate = null;
+            if (rawMemo.includes('[SETTLED_DATE]')) {
+                const m = rawMemo.match(/\[SETTLED_DATE\](.*?)\[\/SETTLED_DATE\]/);
+                if (m) { settledDate = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            window.currentSettledDate = settledDate;
+
+            let isPrivateMeeting = false;
+            if (rawMemo.includes('[PRIVATE]')) {
+                isPrivateMeeting = true;
+                rawMemo = rawMemo.replace(/\[PRIVATE\]/g, '');
+            }
+
+            let isProposal = false;
+            if (rawMemo.includes('[PROPOSAL]')) {
+                isProposal = true;
+                rawMemo = rawMemo.replace(/\[PROPOSAL\]/g, '');
+            }
+
+            let isPendingAdmin = false;
+            if (rawMemo.includes('[PENDING_ADMIN]')) {
+                isPendingAdmin = true;
+                rawMemo = rawMemo.replace(/\[PENDING_ADMIN\]/g, '');
+            }
+
+            let cancelReason = '';
+            if (rawMemo.includes('[CANCELED_REASON]')) {
+                const m = rawMemo.match(/\[CANCELED_REASON\](.*?)\[\/CANCELED_REASON\]/);
+                if (m) {
+                    cancelReason = m[1];
+                    rawMemo = rawMemo.replace(m[0], '');
+                }
+            }
+
+            let isCanceled = false;
+            if (rawMemo.includes('[CANCELED]') || cancelReason !== '') {
+                isCanceled = true;
+                rawMemo = rawMemo.replace(/\[CANCELED\]/g, '');
+            }
+
+            if (rawMemo.includes('[HIDDEN:')) {
+                rawMemo = rawMemo.replace(/\[HIDDEN:[^\]]+\]/g, '');
+            }
+
+            const btnComplete = document.getElementById('btnComplete');
+            if (isDone) {
+                btnComplete.innerHTML = '🔄 완료 취소';
+                btnComplete.style.backgroundColor = '#f3f4f6';
+                btnComplete.style.color = '#4b5563';
+                btnComplete.style.borderColor = '#e5e7eb';
+            } else {
+                btnComplete.innerHTML = '✅ 일정 완료';
+                btnComplete.style.backgroundColor = '#dcfce7';
+                btnComplete.style.color = '#16a34a';
+                btnComplete.style.borderColor = '#bbf7d0';
+            }
+
+            let linkUrl = null, linkName = '관련 링크', mTime = null, mLoc = null, mAtt = null;
+            if (rawMemo.includes('[URL]')) {
+                const m = rawMemo.match(/\[URL\](.*?)\[\/URL\]/);
+                if (m) { 
+                    let urlData = m[1];
+                    if (urlData.includes('|')) {
+                        const parts = urlData.split('|');
+                        linkUrl = parts[0];
+                        linkName = parts[1];
+                    } else {
+                        linkUrl = urlData;
+                    }
+                    rawMemo = rawMemo.replace(m[0], ''); 
+                }
+            }
+            if (rawMemo.includes('[START]')) {
+                const m = rawMemo.match(/\[START\](.*?)\[\/START\]/);
+                if (m) { rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            mTime = data.schedule_time ? data.schedule_time.substring(0, 5) : null;
+            if (!mTime && rawMemo.includes('[TIME]')) {
+                const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                if (m) { mTime = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            } else if (rawMemo.includes('[TIME]')) {
+                const m = rawMemo.match(/\[TIME\](.*?)\[\/TIME\]/);
+                if (m) { rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[LOC]')) {
+                const m = rawMemo.match(/\[LOC\](.*?)\[\/LOC\]/);
+                if (m) { mLoc = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[ATT]')) {
+                const m = rawMemo.match(/\[ATT\](.*?)\[\/ATT\]/);
+                if (m) { mAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+
+            let mDeadline = null, mMinAtt = null;
+            if (rawMemo.includes('[DEADLINE]')) {
+                const m = rawMemo.match(/\[DEADLINE\](.*?)\[\/DEADLINE\]/);
+                if (m) { mDeadline = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+            if (rawMemo.includes('[MIN_ATT]')) {
+                const m = rawMemo.match(/\[MIN_ATT\](.*?)\[\/MIN_ATT\]/);
+                if (m) { mMinAtt = m[1]; rawMemo = rawMemo.replace(m[0], ''); }
+            }
+
+            if (data.schedule_type === '모임' || (!data.building_id && !data.property_id)) {
+                let meetTitle = '모임';
+                if (isPrivateMeeting) meetTitle = '개인 일정';
+                else if (isCanceled) meetTitle = '❌ 취소된 모임';
+                else if (isProposal) meetTitle = '💡 수요조사 (제안)';
+                else if (isPendingAdmin) meetTitle = '⏳ 승인 대기중';
+                else meetTitle = '✅ 확정 모임';
+
+                document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + meetTitle;
+                document.getElementById('address').innerText = mLoc || '장소 미정';
+                document.getElementById('pwdRow').style.display = 'none';
+                
+                let meetInfoHtml = '';
+                if(mTime) meetInfoHtml += `<div style="margin-bottom:8px;">⏰ 시간: <strong>${mTime}</strong></div>`;
+                if(mAtt) meetInfoHtml += `<div style="margin-bottom:8px;">👤 참석: <strong>${mAtt}</strong></div>`;
+                if(linkUrl) meetInfoHtml += `<div>🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight: bold;">${linkName}</a></div>`;
+                
+                const rawLines = rawMemo.trim().split('\n');
+                const meetName = rawLines[0] || '모임 일정';
+                const meetDesc = rawLines.slice(1).join('<br>').trim();
+                
+                let titleHtml = `<div style="font-size:18px; font-weight:700; margin-bottom:4px; color:#111827;">${meetName}</div>`;
+                let descHtml = '';
+                if (meetDesc) {
+                    descHtml = `<div style="font-size:15px; font-weight:400; color:#475569; line-height:1.6; margin-bottom:12px;">${meetDesc}</div>`;
+                } else {
+                    titleHtml = titleHtml.replace('margin-bottom:4px;', 'margin-bottom:12px;');
+                }
+                
+                let cancelHtml = '';
+                if (isCanceled && cancelReason) {
+                    cancelHtml = `<div style="margin-bottom: 16px; padding: 12px; background: #fef2f2; border: 1px solid #fecaca; border-radius: 8px; color: #b91c1c; font-size: 14px; font-weight: 600;">💬 취소 사유: ${cancelReason}</div>`;
+                }
+                
+                document.getElementById('memo').innerHTML = titleHtml + descHtml + cancelHtml + meetInfoHtml;
+            } else {
+                document.getElementById('dealTitle').innerText = (data.schedule_date ? data.schedule_date + ' ' : '') + data.schedule_type;
+
+                let finalAddress = '';
+                if (data.buildings) {
+                    finalAddress = data.buildings.road_address;
+                    if (data.buildings.jibun_address) {
+                        finalAddress += ' (' + data.buildings.jibun_address + ')';
+                    }
+                } else if (data.properties) {
+                    finalAddress = data.properties.address || '장소 없음';
+                } else {
+                    finalAddress = '장소 없음';
+                }
+                
+                document.getElementById('address').innerText =
+                    finalAddress + (data.rooms ? ' ' + data.rooms.room_name : '');
+
+                const pwd = data.buildings ? data.buildings.entrance_password : null;
+                document.getElementById('entrancePassword').innerHTML = pwd 
+                    ? `<span>${pwd}</span> <span style="font-size: 12px; color: #6b7280; font-weight: normal; border: 1px solid #e5e7eb; padding: 2px 6px; border-radius: 4px; background: #ffffff;">수정</span>`
+                    : `<span style="color: #9ca3af; font-weight: normal;">미등록</span> <span style="font-size: 12px; color: #3b82f6; border: 1px solid #bfdbfe; background: #eff6ff; padding: 2px 6px; border-radius: 4px; font-weight: normal;">+ 추가</span>`;
+
+                if (!data.buildings) document.getElementById('pwdRow').style.display = 'none';
+
+                let finalMemoHtml = '';
+                if (mTime) {
+                    finalMemoHtml += `<div style="margin-bottom:12px; display:inline-flex; align-items:center; gap:6px; background:#eff6ff; color:#3b82f6; padding:6px 12px; border-radius:8px; font-weight:700; font-size:14px; border:1px solid #bfdbfe;">🕙 지정 시간: ${mTime}</div><br>`;
+                }
+                finalMemoHtml += rawMemo.replace(/\n/g, '<br>');
+                if(linkUrl) {
+                   finalMemoHtml += `<div style="margin-top:12px;">🔗 <a href="${linkUrl}" target="_blank" style="color:#3b82f6; font-weight:bold;">${linkName}</a></div>`;
+                }
+                document.getElementById('memo').innerHTML = finalMemoHtml || '';
+            }
+
+            if (data.client_requests && data.client_requests.client_phone) {
+                const phone = data.client_requests.client_phone.replace(/[^0-9]/g, '').replace(/(\d{3})(\d{3,4})(\d{4})/, '$1-$2-$3');
+                let cmemo = data.client_requests.memo || '';
+                if (cmemo) cmemo = ` (${cmemo.substring(0, 15)})`;
+                document.getElementById('clientInfo').innerText = `${phone}${cmemo}`;
+                document.getElementById('clientRow').style.display = 'flex';
+            } else {
+                document.getElementById('clientRow').style.display = 'none';
+            }
+
+            window.currentBuildingId = data.building_id;
+            window.currentRoomId = data.room_id;
+
+            if (data.room_id) {
+                await loadMeters(data.room_id);
+            }
+        }
+
+        async function loadMeters(roomId) {
+            const { data, error } = await supabaseClient
+                .from('utility_meters')
+                .select('*')
+                .eq('room_id', roomId)
+                .eq('office_id', window.currentUser.office_id);
+
+            if (error) {
+                document.getElementById('meterInfo').style.display = 'block';
+                document.getElementById('meterData').innerHTML = `<div style="color:red;">오류 발생: ${error.message}</div>`;
+                return;
+            }
+
+            if (!data || data.length === 0) {
+                // 데이터가 없는 경우 (아직 입력 안 됨 등) -> 영역은 보이되 없다고 표시
+                document.getElementById('meterInfo').style.display = 'block';
+                document.getElementById('meterData').innerHTML = `<div style="color:#9ca3af;">입력된 정산 정보가 없습니다.</div>`;
+                return;
+            }
+
+            let electric = '-', water = '-', gas = '-', contact = '';
+            
+            for (let m of data) {
+                if (m.type === 'electric') electric = m.meter_last4;
+                if (m.type === 'water') water = m.meter_last4;
+                if (m.type === 'gas') gas = m.meter_last4;
+                if (m.type === 'contact') contact = m.meter_last4;
+            }
+
+            if (contact) {
+                document.getElementById('contact').innerHTML = `<a href="tel:${contact}" style="color: inherit; text-decoration: none;">${contact}</a>`;
+                document.getElementById('contactRow').style.display = 'flex';
+            } else {
+                document.getElementById('contactRow').style.display = 'none';
+            }
+
+            document.getElementById('meterInfo').style.display = 'block';
+            document.getElementById('meterData').innerHTML = `
+                <div>⚡ 전기: ${electric}</div>
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">💧 수도: ${water} <span style="font-size: 13px; color: #9ca3af; margin-left: 8px;">(고객센터 <a href="tel:120" style="color: #3b82f6; text-decoration: none;">120</a> / <a href="tel:02-3146-3500" style="color: #3b82f6; text-decoration: none;">02-3146-3500</a>)</span></div>
+                <div style="display: flex; align-items: center; flex-wrap: wrap;">🔥 가스: ${gas} <span style="font-size: 13px; color: #9ca3af; margin-left: 8px;">(강북3고객센터 <a href="tel:1588-5788" style="color: #3b82f6; text-decoration: none;">1588-5788</a>)</span></div>
+            `;
+
+            const settleStatus = document.getElementById('settleStatus');
+            if (window.currentSettledDate) {
+                settleStatus.innerHTML = `<span style="font-size: 12px; color: #16a34a; background: #dcfce7; padding: 2px 6px; border-radius: 4px; font-weight: 600; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" onclick="toggleSettlementComplete()">✅ 완료 (${window.currentSettledDate})</span>`;
+            } else {
+                settleStatus.innerHTML = `<span style="font-size: 12px; color: #6b7280; border: 1px solid #e5e7eb; background: #f9fafb; padding: 2px 6px; border-radius: 4px; cursor: pointer; display: inline-flex; align-items: center; gap: 4px;" onclick="toggleSettlementComplete()">◻️ 완료하기</span>`;
+            }
+        }
+
+        async function promptEditPassword() {
+            if (!window.currentBuildingId) return;
+            
+            // Extract current password from DOM (removing the '수정' text and span tags)
+            const currentPwdText = document.getElementById('entrancePassword').querySelector('span').innerText;
+            const isUnregistered = currentPwdText === '미등록';
+            const defaultText = isUnregistered ? '' : currentPwdText;
+
+            const newPwd = prompt('공동현관 비밀번호를 입력하세요:', defaultText);
+            
+            // If user clicked Cancel, do nothing
+            if (newPwd === null) return;
+            
+            const { error } = await supabaseClient
+                .from('buildings')
+                .update({ entrance_password: newPwd })
+                .eq('id', window.currentBuildingId)
+                .eq('office_id', window.currentUser.office_id);
+                
+            if (error) {
+                alert('비밀번호 변경 실패: ' + error.message);
+                return;
+            }
+            
+            // Reload to reflect changes
+            loadDeal();
+        }
+
+        function openKakaoMap() {
+            const address =
+                document.getElementById(
+                    'address'
+                ).innerText;
+
+            const url =
+                'https://map.kakao.com/link/search/'
+                + encodeURIComponent(address);
+
+            window.open(url);
+        }
+
+        function goSettlement() {
+            if (window.currentBuildingId && window.currentRoomId) {
+                location.href = 'meter-register.html?building_id=' + window.currentBuildingId + '&room_id=' + window.currentRoomId + '&schedule_id=' + scheduleId;
+            } else {
+                alert('일정 정보를 불러오는 중입니다.');
+            }
+        }
+
+        function editDeal() {
+            location.href = 'deal-edit.html?id=' + scheduleId;
+        }
+
+        async function deleteDeal() {
+
+            const ok =
+                confirm('일정을 삭제할까요?');
+
+            if (!ok) return;
+
+            const { error } =
+                await supabaseClient
+                    .from('schedules')
+                    .delete()
+                    .eq('id', scheduleId);
+
+            if (error) {
+
+                alert(error.message);
+
+                return;
+            }
+
+            alert('삭제 완료');
+
+            location.href =
+                'deal-register.html';
+
+        }
+
+        async function toggleComplete() {
+            const ok = confirm(window.currentDealIsDone ? '완료 처리를 취소하시겠습니까?' : '이 일정을 완료 처리하시겠습니까?');
+            if (!ok) return;
+
+            const { data, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
+            if (fetchErr) { alert(fetchErr.message); return; }
+
+            let newMemo = data.memo || '';
+            if (window.currentDealIsDone) {
+                newMemo = newMemo.replace(/\[DONE\]/g, '');
+            } else {
+                newMemo = '[DONE]' + newMemo;
+            }
+
+            const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            if (error) { alert(error.message); return; }
+
+            alert(window.currentDealIsDone ? '완료 취소되었습니다.' : '일정이 완료 처리되었습니다.');
+            location.reload();
+        }
+
+        async function toggleSettlementComplete() {
+            const isSettled = !!window.currentSettledDate;
+            const ok = confirm(isSettled ? '정산 완료를 취소하시겠습니까?' : '정산을 완료 처리하시겠습니까?');
+            if (!ok) return;
+
+            const { data, error: fetchErr } = await supabaseClient.from('schedules').select('memo').eq('id', scheduleId).single();
+            if (fetchErr) { alert(fetchErr.message); return; }
+
+            let newMemo = data.memo || '';
+            if (isSettled) {
+                newMemo = newMemo.replace(/\[SETTLED_DATE\].*?\[\/SETTLED_DATE\]/g, '');
+            } else {
+                const today = new Date();
+                const dString = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                newMemo = `[SETTLED_DATE]${dString}[/SETTLED_DATE]` + newMemo;
+            }
+
+            const { error } = await supabaseClient.from('schedules').update({ memo: newMemo }).eq('id', scheduleId);
+            if (error) { alert(error.message); return; }
+
+            alert(isSettled ? '정산 완료가 취소되었습니다.' : '정산 완료 처리되었습니다.');
+            location.reload();
+        }
+
+        async function init() {
+            const user = await requireAuth();
+            if (user) {
+                loadDeal();
+            }
+        }
+        init();
+
+    </script>
+
+    <footer class="app-footer">
+        <strong>신대림공인중개사사무소</strong>
+        사업자등록번호: 219-01-50737 | 전화번호: 010-9128-0586<br>
+        서울특별시 마포구 모래내로7길 52 (성산동)
+    </footer>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js');
+    });
+  }
+</script>
+</body>
+
+</html>
+
