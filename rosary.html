@@ -220,13 +220,14 @@
         </div>
 
         <!-- 1. 오늘의 가톨릭 전례력 배너 카드 -->
-        <div id="introLiturgicalBanner" class="liturgical-info-banner">
+        <div id="introLiturgicalBanner" class="liturgical-info-banner" onclick="if(window.rosaryApp){window.rosaryApp.openLiturgicalColorModal();}else{openLiturgicalColorModalDirect();}" style="cursor: pointer;" title="전례색의 의미 보기">
           <div class="liturgical-info-main">
             <span id="liturgicalDateText" class="liturgical-info-date">오늘의 가톨릭 전례력</span>
             <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
           </div>
-          <div style="display: flex; align-items: center; flex-shrink: 0;">
+          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
             <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹]</span>
+            <span style="font-size: 0.85rem; opacity: 0.8; display: inline-flex; align-items: center;" title="전례색 의미 안내">ℹ️</span>
           </div>
         </div>
 
@@ -538,6 +539,19 @@
 
           <!-- 기도문 본문 스크롤 영역 (신비 묵상 & 성경 구절 포함하여 상하 스크롤 100% 원활) -->
           <div id="prayerBodyScroll" class="prayer-body-scroll">
+            <!-- 기도 지향 리마인더 바 (기도 시작 시 정성껏 담은 지향이 있을 때 기도 카드 상단에 은은하게 상시 동행) -->
+            <div id="prayerIntentionReminderBar" style="display: none; background: linear-gradient(135deg, rgba(243, 198, 105, 0.15) 0%, rgba(30, 41, 59, 0.8) 100%); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: 12px; padding: 8px 12px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.25);">
+              <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px;">
+                <span style="font-size: 0.72rem; color: var(--gold-light); font-weight: 700; display: flex; align-items: center; gap: 4px;">
+                  <span>🕊️</span> <span>이 기도의 봉헌 지향</span>
+                </span>
+                <span style="font-size: 0.68rem; color: rgba(255,255,255,0.6);">마음에 품고 바치는 은혜</span>
+              </div>
+              <div id="prayerIntentionReminderText" style="font-size: 0.84rem; color: #FFF; font-style: italic; line-height: 1.45; word-break: keep-all; font-weight: 500;">
+                ""
+              </div>
+            </div>
+
             <!-- 신비 묵상 영역 (각 단 시작 큰 알에서 노출) -->
             <div id="meditationBox" class="meditation-box" style="display: none;">
               <span id="meditationTitle" class="meditation-title">환희의 신비 제1단</span>
@@ -726,6 +740,157 @@
           </button>
           <button type="button" id="btnExitConfirmLeave" class="action-pill-btn" style="width: 100%; min-height: 50px; padding: 10px 16px; font-size: 0.95rem; font-weight: 700; color: #E2E8F0; border-radius: 14px; border: 1.5px solid rgba(255, 255, 255, 0.18); background: rgba(255, 255, 255, 0.08); display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;">
             <span>처음 화면으로 나가기</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6.11 기도 시작 준비 모달 (실물 묵주 유무 확인 & 기도 지향 마음에 담기) -->
+    <div id="prayerPrepModal" class="modal-backdrop" style="display: none;">
+      <div class="bottom-sheet" style="max-width: 440px; text-align: left;">
+        <div class="sheet-handle"></div>
+        <div style="text-align: center; margin-bottom: 14px;">
+          <div style="font-size: 2.2rem; margin-bottom: 4px;">📿</div>
+          <h3 id="prepModalTitle" class="sheet-title" style="margin: 0 0 4px 0; font-size: 1.2rem; color: #FFF;">기도 시작 준비</h3>
+          <p id="prepModalDesc" style="font-size: 0.84rem; color: var(--text-secondary); margin: 0; word-break: keep-all;">
+            기도에 온전히 집중하실 수 있도록 묵주 상태와 마음의 지향을 확인합니다.
+          </p>
+        </div>
+
+        <!-- 1. 실물 묵주 소지 여부 선택 카드 (필수 확인) -->
+        <div style="background: rgba(243, 198, 105, 0.08); border: 1.5px solid rgba(243, 198, 105, 0.35); border-radius: 14px; padding: 12px 14px; margin-bottom: 14px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 8px;">
+            <span style="font-size: 0.86rem; font-weight: 800; color: var(--gold-light); display: flex; align-items: center; gap: 5px;">
+              <span>📿</span> <span>손에 실물 묵주가 있으신가요?</span>
+            </span>
+            <span style="font-size: 0.7rem; color: var(--gold-primary); background: rgba(243,198,105,0.18); padding: 2px 6px; border-radius: 8px; font-weight: 700;">방식 선택</span>
+          </div>
+          
+          <div class="intro-toggle-group" style="background: rgba(15, 23, 42, 0.6); border-radius: 12px; padding: 4px; display: flex; gap: 6px;">
+            <button type="button" id="btnPrepModePhysical" class="intro-toggle-btn active" style="flex: 1.15; padding: 10px 8px; text-align: center; border-radius: 9px; cursor: pointer;">
+              <span style="font-size: 0.88rem; font-weight: 800; display: block;">📿 실물 묵주 있음</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">단위별 안내 · 분심 방지</small>
+            </button>
+            <button type="button" id="btnPrepModeDigital" class="intro-toggle-btn" style="flex: 1; padding: 10px 8px; text-align: center; border-radius: 9px; cursor: pointer;">
+              <span style="font-size: 0.88rem; font-weight: 800; display: block;">📱 묵주 없음 (터치)</span>
+              <small style="display: block; font-size: 0.68rem; opacity: 0.85; margin-top: 2px;">화면 알 하나씩 카운트</small>
+            </button>
+          </div>
+        </div>
+
+        <!-- 2. 오늘 바칠 기도 지향을 담는 공간 (마음에 담는 공간) -->
+        <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px;">
+          <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
+            <span style="font-size: 0.84rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 5px;">
+              <span>🕊️</span> <span>오늘 바치실 기도의 지향 (선택)</span>
+            </span>
+            <span style="font-size: 0.68rem; color: var(--text-muted);">마음에 품고 기도</span>
+          </div>
+          <div style="position: relative;">
+            <input type="text" id="inputPrepIntention" maxlength="60" placeholder="예: 우리 가족의 평화와 건강, 연옥 영혼을 위하여" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: 10px; color: #FFF; font-size: 0.86rem; padding: 10px 12px; outline: none; transition: border-color 0.2s ease;">
+          </div>
+          
+          <!-- 추천 지향 빠른 태그 버튼들 -->
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;">
+            <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('가족의 평화와 화목을 위하여')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#가족의 평화</button>
+            <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('아픈 이들의 쾌유와 치유를 위하여')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#환우의 치유</button>
+            <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('세상을 떠난 연옥 영혼들의 영원한 안식을 위하여')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#연옥 영혼</button>
+            <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('어려움 속에서 힘을 얻고 은총을 누리도록')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#은총과 용기</button>
+          </div>
+        </div>
+
+        <!-- 하단 시작 & 닫기 버튼 -->
+        <div style="display: flex; flex-direction: column; gap: 8px;">
+          <button type="button" id="btnPrepConfirmStart" class="action-pill-btn gold" style="width: 100%; min-height: 56px; padding: 12px 16px; font-size: 1.05rem; font-weight: 800; border-radius: 16px; display: flex; align-items: center; justify-content: center; gap: 8px; box-shadow: 0 4px 16px rgba(243, 198, 105, 0.35); border: 2px solid rgba(243, 198, 105, 0.75); cursor: pointer;">
+            <span style="font-size: 1.25rem;">✝️</span> <span>이 지향으로 기도 시작하기</span>
+          </button>
+          <button type="button" id="btnPrepCancel" class="action-pill-btn" onclick="closeAllModalsDirect();" style="width: 100%; min-height: 42px; padding: 8px 16px; font-size: 0.88rem; color: var(--text-muted); background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; cursor: pointer;">
+            취소
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 6.12 전례색의 의미 안내 모달 바텀시트 -->
+    <div id="liturgicalColorModal" class="modal-backdrop" style="display: none;">
+      <div class="bottom-sheet" style="max-width: 440px; text-align: left;">
+        <div class="sheet-handle"></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px;">
+          <div style="display: flex; align-items: center; gap: 8px;">
+            <span style="font-size: 1.4rem;">🎨</span>
+            <div>
+              <h3 class="sheet-title" style="margin: 0; font-size: 1.15rem; color: #FFF;">가톨릭 전례색의 의미</h3>
+              <p style="font-size: 0.76rem; color: var(--text-muted); margin: 2px 0 0 0;">전례 주기에 따른 거룩한 빛깔의 영성</p>
+            </div>
+          </div>
+          <button type="button" class="tracker-close-btn" onclick="closeAllModalsDirect();" aria-label="닫기">✕</button>
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px; max-height: 62vh; overflow-y: auto; padding-right: 2px;">
+          <!-- 녹색 (Green) -->
+          <div style="background: rgba(34, 197, 94, 0.1); border: 1px solid rgba(34, 197, 94, 0.35); border-radius: 12px; padding: 10px 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #22C55E; box-shadow: 0 0 8px #22C55E;"></span>
+              <span style="font-size: 0.92rem; font-weight: 800; color: #86EFAC;">녹색 (Green) · 희망과 생명</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; margin: 0; word-break: keep-all;">
+              <strong>사용 시기:</strong> 연중 시기<br>
+              영적 성장과 희망, 영원한 생명을 상징합니다. 신앙인이 일상 속에서 그리스도의 가르침을 따라 열매 맺는 여정을 뜻합니다.
+            </p>
+          </div>
+
+          <!-- 백색 (White) -->
+          <div style="background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.35); border-radius: 12px; padding: 10px 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 8px #FFFFFF;"></span>
+              <span style="font-size: 0.92rem; font-weight: 800; color: #FFF;">백색 (White) · 빛과 기쁨, 영광</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; margin: 0; word-break: keep-all;">
+              <strong>사용 시기:</strong> 부활 시기, 성탄 시기, 주님 축일, 성모님 축일, 천사 축일<br>
+              빛과 순결, 천상의 기쁨과 승리를 상징합니다. 주님의 부활과 성모님의 티 없는 순결을 기립니다.
+            </p>
+          </div>
+
+          <!-- 자색 (Violet) -->
+          <div style="background: rgba(168, 85, 247, 0.1); border: 1px solid rgba(168, 85, 247, 0.35); border-radius: 12px; padding: 10px 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #A855F7; box-shadow: 0 0 8px #A855F7;"></span>
+              <span style="font-size: 0.92rem; font-weight: 800; color: #D8B4FE;">자색 (Violet) · 회개와 기다림</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; margin: 0; word-break: keep-all;">
+              <strong>사용 시기:</strong> 대림 시기, 사순 시기, 위령 미사<br>
+              보속과 통회, 겸손과 경건한 기다림을 상징합니다. 주님을 맞이하기 위해 마음을 정화하는 때입니다.
+            </p>
+          </div>
+
+          <!-- 홍색 (Red) -->
+          <div style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.35); border-radius: 12px; padding: 10px 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #EF4444; box-shadow: 0 0 8px #EF4444;"></span>
+              <span style="font-size: 0.92rem; font-weight: 800; color: #FCA5A5;">홍색 (Red) · 성령과 사랑, 순교</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; margin: 0; word-break: keep-all;">
+              <strong>사용 시기:</strong> 주님 수난 성지주일, 성금요일, 성령 강림 대축일, 순교자 축일<br>
+              타오르는 성령의 불꽃과 그리스도의 지극한 십자가 사랑, 신앙을 위해 피 흘린 순교자들의 숭고한 충성을 뜻합니다.
+            </p>
+          </div>
+
+          <!-- 장미색 (Rose) -->
+          <div style="background: rgba(244, 114, 182, 0.1); border: 1px solid rgba(244, 114, 182, 0.35); border-radius: 12px; padding: 10px 12px;">
+            <div style="display: flex; align-items: center; gap: 6px; margin-bottom: 4px;">
+              <span style="display: inline-block; width: 12px; height: 12px; border-radius: 50%; background: #F472B6; box-shadow: 0 0 8px #F472B6;"></span>
+              <span style="font-size: 0.92rem; font-weight: 800; color: #FBCFE8;">장미색 (Rose) · 다가오는 구원의 작은 기쁨</span>
+            </div>
+            <p style="font-size: 0.8rem; color: #E2E8F0; line-height: 1.5; margin: 0; word-break: keep-all;">
+              <strong>사용 시기:</strong> 대림 제3주일(기뻐하여라 주일), 사순 제4주일(즐거워하여라 주일)<br>
+              자색의 회개와 보속 속에서, 구원의 날이 가까웠음을 미리 기뻐하는 희망의 빛깔입니다.
+            </p>
+          </div>
+        </div>
+
+        <div style="margin-top: 14px;">
+          <button type="button" class="action-pill-btn gold" onclick="closeAllModalsDirect();" style="width: 100%; min-height: 46px; font-size: 0.95rem; font-weight: 700; border-radius: 14px; cursor: pointer;">
+            확인 및 닫기
           </button>
         </div>
       </div>
@@ -2926,6 +3091,15 @@ class RosaryApp {
       btnStartPrayer: document.getElementById("btnStartPrayer"),
       btnStartPrayerText: document.getElementById("btnStartPrayerText"),
 
+      // 기도 시작 준비 모달
+      prayerPrepModal: document.getElementById("prayerPrepModal"),
+      btnPrepModePhysical: document.getElementById("btnPrepModePhysical"),
+      btnPrepModeDigital: document.getElementById("btnPrepModeDigital"),
+      inputPrepIntention: document.getElementById("inputPrepIntention"),
+      btnPrepConfirmStart: document.getElementById("btnPrepConfirmStart"),
+      btnPrepCancel: document.getElementById("btnPrepCancel"),
+      liturgicalColorModal: document.getElementById("liturgicalColorModal"),
+
       // 이어하기 덮어쓰기 방지 확인 모달
       resumeConfirmModal: document.getElementById("resumeConfirmModal"),
       resumeConfirmMystery: document.getElementById("resumeConfirmMystery"),
@@ -3892,8 +4066,61 @@ class RosaryApp {
       // 이어할 기록이 있다면 덮어쓰기 방지 확인 모달 띄우기
       this.showResumeConfirmModal(saved);
     } else {
-      // 이어할 기록이 없으면 곧바로 시작
+      // 신규 기도 시작 시: 실물 묵주 유무 및 기도 지향 준비 모달 띄우기
+      this.openPrayerPrepModal();
+    }
+  }
+
+  // 기도 시작 준비 모달 열기 (실물 묵주 선택 & 기도 지향 담기)
+  openPrayerPrepModal() {
+    try {
+      const modalEl = this.dom.prayerPrepModal || document.getElementById("prayerPrepModal");
+      const btnPhysical = this.dom.btnPrepModePhysical || document.getElementById("btnPrepModePhysical");
+      const btnDigital = this.dom.btnPrepModeDigital || document.getElementById("btnPrepModeDigital");
+      const inputIntention = this.dom.inputPrepIntention || document.getElementById("inputPrepIntention");
+
+      // 현재 앱 설정에 맞게 선택 상태 초기화
+      const curMode = this.settings.prayerMode || "physical";
+      this.prepSelectedMode = curMode;
+
+      if (btnPhysical && btnDigital) {
+        if (curMode === "physical") {
+          btnPhysical.classList.add("active");
+          btnDigital.classList.remove("active");
+        } else {
+          btnPhysical.classList.remove("active");
+          btnDigital.classList.add("active");
+        }
+      }
+
+      // 기도 지향 초기화 또는 이전 지향 유지
+      if (inputIntention) {
+        try {
+          const storedIntention = localStorage.getItem("rosary_active_prayer_intention") || "";
+          inputIntention.value = storedIntention;
+        } catch(e) {}
+      }
+
+      if (modalEl) {
+        this.openModal(modalEl);
+      } else {
+        this.startPrayer(false);
+      }
+    } catch(err) {
+      console.error("openPrayerPrepModal error:", err);
       this.startPrayer(false);
+    }
+  }
+
+  // 전례색 안내 모달 열기
+  openLiturgicalColorModal() {
+    try {
+      const modalEl = this.dom.liturgicalColorModal || document.getElementById("liturgicalColorModal");
+      if (modalEl) {
+        this.openModal(modalEl);
+      }
+    } catch(err) {
+      console.error("openLiturgicalColorModal error:", err);
     }
   }
 
@@ -3983,8 +4210,9 @@ class RosaryApp {
         this.clearProgress();
         this.sessionCompletedDecades = new Set();
 
-    // 공동체 및 총 봉헌 단수 초기화
-    // this.initCommunityStats();
+        // 기도 지향 리마인더 동기화
+        this.syncPrayerIntentionReminder();
+
         this.steps = this.buildCurrentSteps();
         this.renderDecadeProgressPills();
         this.switchView("prayer");
@@ -4000,6 +4228,23 @@ class RosaryApp {
     } else {
       this.showCrucifixKissOverlay(proceed);
     }
+  }
+
+  // 기도 화면 상단 기도 지향 표시 동기화
+  syncPrayerIntentionReminder() {
+    try {
+      const reminderBar = document.getElementById("prayerIntentionReminderBar");
+      const reminderText = document.getElementById("prayerIntentionReminderText");
+      if (!reminderBar || !reminderText) return;
+
+      const intention = localStorage.getItem("rosary_active_prayer_intention") || "";
+      if (intention && intention.trim()) {
+        reminderText.textContent = `"${intention.trim()}"`;
+        reminderBar.style.display = "block";
+      } else {
+        reminderBar.style.display = "none";
+      }
+    } catch(e) {}
   }
 
   
@@ -4261,6 +4506,7 @@ showCrucifixKissOverlay(onComplete) {
       }
 
       // 4. switch view then goToStep
+      this.syncPrayerIntentionReminder();
       this.switchView("prayer");
       this.goToStep(targetStep, false);
       this.saveProgress();
@@ -6418,6 +6664,48 @@ showCrucifixKissOverlay(onComplete) {
         this.resumeSelectedMode = "digital";
         if (this.dom.btnResumeModePhysical) this.dom.btnResumeModePhysical.classList.remove("active");
         if (this.dom.btnResumeModeDigital) this.dom.btnResumeModeDigital.classList.add("active");
+      });
+    }
+
+    // 0-5-2) 신규 기도 시작 준비 모달 이벤트 (실물 묵주 모드 선택 & 지향 저장 & 기도 시작)
+    if (this.dom.btnPrepModePhysical) {
+      this.dom.btnPrepModePhysical.addEventListener("click", () => {
+        this.prepSelectedMode = "physical";
+        this.setPrayerMode("physical");
+        if (this.dom.btnPrepModePhysical) this.dom.btnPrepModePhysical.classList.add("active");
+        if (this.dom.btnPrepModeDigital) this.dom.btnPrepModeDigital.classList.remove("active");
+      });
+    }
+    if (this.dom.btnPrepModeDigital) {
+      this.dom.btnPrepModeDigital.addEventListener("click", () => {
+        this.prepSelectedMode = "digital";
+        this.setPrayerMode("digital");
+        if (this.dom.btnPrepModePhysical) this.dom.btnPrepModePhysical.classList.remove("active");
+        if (this.dom.btnPrepModeDigital) this.dom.btnPrepModeDigital.classList.add("active");
+      });
+    }
+    if (this.dom.btnPrepConfirmStart) {
+      this.dom.btnPrepConfirmStart.addEventListener("click", () => {
+        const mode = this.prepSelectedMode || this.settings.prayerMode || "physical";
+        this.setPrayerMode(mode);
+        const inputIntention = this.dom.inputPrepIntention || document.getElementById("inputPrepIntention");
+        if (inputIntention) {
+          const val = (inputIntention.value || "").trim();
+          try {
+            if (val) {
+              localStorage.setItem("rosary_active_prayer_intention", val);
+            } else {
+              localStorage.removeItem("rosary_active_prayer_intention");
+            }
+          } catch(e) {}
+        }
+        this.closeModals();
+        this.startPrayer(false);
+      });
+    }
+    if (this.dom.btnPrepCancel) {
+      this.dom.btnPrepCancel.addEventListener("click", () => {
+        this.closeModals();
       });
     }
 
@@ -8703,49 +8991,48 @@ function directStartPrayerAction() {
       }
     }
 
-    // 1. 인트로 뷰 즉시 숨기고 기도 뷰 즉시 노출
-    var iv = document.getElementById("introView");
-    var pv = document.getElementById("prayerView");
-    var yv = document.getElementById("yeondoView");
-    if (iv) {
-      iv.style.setProperty("display", "none", "important");
-      iv.style.setProperty("visibility", "hidden", "important");
-      iv.style.setProperty("z-index", "-1", "important");
+    // 신규 기도 시작 시: 실물 묵주 모드 선택 및 기도 지향 준비 모달 띄우기
+    if (window.rosaryApp && typeof window.rosaryApp.openPrayerPrepModal === "function") {
+      window.rosaryApp.openPrayerPrepModal();
+      return;
     }
-    if (yv) yv.style.setProperty("display", "none", "important");
-    if (pv) {
-      pv.style.setProperty("display", "flex", "important");
-      pv.style.setProperty("visibility", "visible", "important");
-      pv.style.setProperty("z-index", "999", "important");
+    var prepModal = document.getElementById("prayerPrepModal");
+    if (prepModal) {
+      prepModal.classList.add("show");
+      prepModal.style.setProperty("display", "flex", "important");
+      return;
     }
 
-    // 2. 앱 인스턴스에 기도 시작 알림
-    if (window.rosaryApp) {
-      if (typeof window.rosaryApp.startPrayer === "function") {
-        window.rosaryApp.startPrayer(false);
-        return;
-      }
-      window.rosaryApp.currentView = "prayer";
-      if (typeof window.rosaryApp.clearProgress === "function") {
-        window.rosaryApp.clearProgress();
-      }
-      if (typeof window.rosaryApp.buildCurrentSteps === "function") {
-        window.rosaryApp.steps = window.rosaryApp.buildCurrentSteps();
-      }
-      if (typeof window.rosaryApp.renderDecadeProgressPills === "function") {
-        window.rosaryApp.renderDecadeProgressPills();
-      }
-      if (typeof window.rosaryApp.goToStep === "function") {
-        window.rosaryApp.goToStep(0, false);
-      }
+    // fallback
+    if (window.rosaryApp && typeof window.rosaryApp.startPrayer === "function") {
+      window.rosaryApp.startPrayer(false);
+      return;
     }
   } catch(e) {
     console.error("directStartPrayerAction error:", e);
-    var iv = document.getElementById("introView");
-    var pv = document.getElementById("prayerView");
-    if (iv) iv.style.display = "none";
-    if (pv) pv.style.display = "flex";
   }
+}
+
+function selectPrepIntentionTag(text) {
+  try {
+    var input = document.getElementById("inputPrepIntention");
+    if (input) {
+      input.value = text;
+      input.focus();
+    }
+  } catch(e) {}
+}
+
+function openLiturgicalColorModalDirect() {
+  try {
+    closeAllModalsDirect();
+    var m = document.getElementById("liturgicalColorModal");
+    if (m) {
+      m.classList.add("show");
+      m.style.setProperty("display", "flex", "important");
+      m.style.setProperty("opacity", "1", "important");
+    }
+  } catch(e) {}
 }
 
 function directContinuePrayerAction() {
