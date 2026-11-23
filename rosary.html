@@ -224,10 +224,16 @@
           <div class="liturgical-info-main">
             <span id="liturgicalDateText" class="liturgical-info-date">오늘의 가톨릭 전례력</span>
             <span id="liturgicalDayName" class="liturgical-info-dayname">연중 시기</span>
+            <span id="liturgicalColorMeaning" class="liturgical-color-meaning" style="font-size: 0.76rem; color: rgba(255, 255, 255, 0.9); display: flex; align-items: center; gap: 4px; margin-top: 1px; font-weight: 500;">
+              🟢 <span>희망과 생명, 영적 성장의 때</span>
+            </span>
           </div>
-          <div style="display: flex; align-items: center; gap: 6px; flex-shrink: 0;">
-            <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹]</span>
-            <span style="font-size: 0.85rem; opacity: 0.8; display: inline-flex; align-items: center;" title="전례색 의미 안내">ℹ️</span>
+          <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px; flex-shrink: 0;">
+            <div style="display: flex; align-items: center; gap: 5px;">
+              <span id="liturgicalColorBadge" class="liturgical-badge color-green">[녹]</span>
+              <span style="font-size: 0.85rem; opacity: 0.8; display: inline-flex; align-items: center;" title="전례색 의미 안내">ℹ️</span>
+            </div>
+            <span style="font-size: 0.68rem; color: rgba(255, 255, 255, 0.7); text-decoration: underline; text-underline-offset: 2px;">의미 보기</span>
           </div>
         </div>
 
@@ -4773,6 +4779,20 @@ showCrucifixKissOverlay(onComplete) {
       if (this.dom.liturgicalColorBadge) {
         this.dom.liturgicalColorBadge.textContent = litInfo.badgeText;
         this.dom.liturgicalColorBadge.className = `liturgical-badge color-${litInfo.color}`;
+      }
+
+      // 전례색 한 줄 영성 의미 갱신
+      const meaningEl = document.getElementById("liturgicalColorMeaning");
+      if (meaningEl) {
+        const meanings = {
+          green: { icon: "🟢", ko: "희망과 생명, 영적 성장의 때", en: "Hope, Life and Spiritual Growth" },
+          white: { icon: "⚪", ko: "빛과 기쁨, 주님의 부활과 영광", en: "Light, Joy, Purity and Glory" },
+          violet: { icon: "🟣", ko: "회개와 절제, 거룩한 기다림", en: "Penance, Preparation and Hope" },
+          red: { icon: "🔴", ko: "성령의 불꽃과 십자가 사랑, 순교", en: "Holy Spirit, Passion and Martyrdom" },
+          rose: { icon: "🌸", ko: "다가오는 구원의 작은 기쁨", en: "Joy in Anticipation of Salvation" }
+        };
+        const m = meanings[litInfo.color] || meanings.green;
+        meaningEl.innerHTML = `${m.icon} <span>${isEn ? m.en : m.ko}</span>`;
       }
     } catch (e) {
       console.warn("Liturgical update error:", e);
