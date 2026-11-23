@@ -379,7 +379,8 @@
         </div>
 
         <!-- 6. 구원을 비는 기도 (구원송) 설정 카드 (성모 묵주기도 모드) -->
-        <div id="introFatimaCard" class="intro-section-card">
+        <!-- 인트로 피로도 완화: 구원송은 [설정 ⚙️]에서 영구 관리하도록 이전 (기본값: 포함) -->
+        <div id="introFatimaCard" class="intro-section-card" style="display: none !important;">
           <div class="intro-card-header">
             <span class="intro-card-icon">🙏</span>
             <span id="introFatimaTitle" class="intro-card-title">구원을 비는 기도 (구원송)</span>
@@ -778,7 +779,7 @@
           </div>
         </div>
 
-        <!-- 2. 오늘 바칠 기도 지향을 담는 공간 (마음에 담는 공간) -->
+        <!-- 2. 오늘 바칠 기도 지향을 담는 공간 (마음에 담는 공간 & 공동체 함께 기도) -->
         <div style="background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 14px; padding: 12px 14px; margin-bottom: 16px;">
           <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 6px;">
             <span style="font-size: 0.84rem; font-weight: 700; color: #FFF; display: flex; align-items: center; gap: 5px;">
@@ -787,7 +788,7 @@
             <span style="font-size: 0.68rem; color: var(--text-muted);">마음에 품고 기도</span>
           </div>
           <div style="position: relative;">
-            <input type="text" id="inputPrepIntention" maxlength="60" placeholder="예: 우리 가족의 평화와 건강, 연옥 영혼을 위하여" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: 10px; color: #FFF; font-size: 0.86rem; padding: 10px 12px; outline: none; transition: border-color 0.2s ease;">
+            <input type="text" id="inputPrepIntention" maxlength="70" placeholder="예: 우리 가족의 평화와 건강, 연옥 영혼을 위하여" style="width: 100%; box-sizing: border-box; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(243, 198, 105, 0.35); border-radius: 10px; color: #FFF; font-size: 0.86rem; padding: 10px 12px; outline: none; transition: border-color 0.2s ease;">
           </div>
           
           <!-- 추천 지향 빠른 태그 버튼들 -->
@@ -796,6 +797,18 @@
             <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('아픈 이들의 쾌유와 치유를 위하여')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#환우의 치유</button>
             <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('세상을 떠난 연옥 영혼들의 영원한 안식을 위하여')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#연옥 영혼</button>
             <button type="button" class="prep-quick-tag" onclick="selectPrepIntentionTag('어려움 속에서 힘을 얻고 은총을 누리도록')" style="background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); color: rgba(255,255,255,0.85); font-size: 0.72rem; padding: 3px 8px; border-radius: 12px; cursor: pointer;">#은총과 용기</button>
+          </div>
+
+          <!-- 교우들과 함께 기도하기 공유 토글 -->
+          <div style="margin-top: 10px; padding-top: 8px; border-top: 1px dashed rgba(255, 255, 255, 0.1); display: flex; align-items: center; justify-content: space-between;">
+            <label for="chkPrepShareCommunity" style="display: flex; align-items: center; gap: 7px; cursor: pointer; user-select: none;">
+              <span style="font-size: 1.05rem;">🌹</span>
+              <div>
+                <div style="font-size: 0.8rem; font-weight: 700; color: var(--gold-light);">전국 교우들과 함께 기도하기</div>
+                <div style="font-size: 0.68rem; color: var(--text-muted);">이 지향을 교우 공동체 나눔판에 올려 함께 지향을 모읍니다</div>
+              </div>
+            </label>
+            <input type="checkbox" id="chkPrepShareCommunity" style="width: 18px; height: 18px; accent-color: var(--gold-primary); cursor: pointer;">
           </div>
         </div>
 
@@ -3344,7 +3357,7 @@ class RosaryApp {
       this.dom.introMysteryCard.style.display = isDm ? "none" : "block";
     }
     if (this.dom.introFatimaCard) {
-      this.dom.introFatimaCard.style.display = isDm ? "none" : "block";
+      this.dom.introFatimaCard.style.display = "none";
     }
     if (this.dom.introPrayerModeCard) {
       this.dom.introPrayerModeCard.style.display = isDm ? "none" : "block";
@@ -6689,8 +6702,10 @@ showCrucifixKissOverlay(onComplete) {
         const mode = this.prepSelectedMode || this.settings.prayerMode || "physical";
         this.setPrayerMode(mode);
         const inputIntention = this.dom.inputPrepIntention || document.getElementById("inputPrepIntention");
+        const chkShare = document.getElementById("chkPrepShareCommunity");
+        let val = "";
         if (inputIntention) {
-          const val = (inputIntention.value || "").trim();
+          val = (inputIntention.value || "").trim();
           try {
             if (val) {
               localStorage.setItem("rosary_active_prayer_intention", val);
@@ -6699,6 +6714,18 @@ showCrucifixKissOverlay(onComplete) {
             }
           } catch(e) {}
         }
+
+        // 교우들과 함께 기도하기 체크 시 공동체 나눔판에 자동 봉헌
+        if (val && chkShare && chkShare.checked) {
+          try {
+            if (typeof window.addNewCommunityIntentionDirect === "function") {
+              window.addNewCommunityIntentionDirect(val, "기도하는 교우");
+            }
+          } catch(e) {
+            console.warn("community share error:", e);
+          }
+        }
+
         this.closeModals();
         this.startPrayer(false);
       });
@@ -8710,6 +8737,31 @@ window.addEventListener('DOMContentLoaded', () => {
         modal.classList.remove('show');
       };
     }
+
+    window.addNewCommunityIntentionDirect = function(txt, author) {
+      if (!txt || !txt.trim()) return;
+      const cleanTxt = txt.trim();
+      const list = getStoredList();
+      // 이미 동일한 지향이 최신에 있으면 중복 추가 방지
+      if (list.length > 0 && list[0].text === cleanTxt) return;
+
+      const newIntention = {
+        id: 'int_' + Date.now(),
+        text: cleanTxt,
+        author: (author || '기도하는 교우').trim(),
+        count: 1,
+        createdAt: Date.now(),
+        active: true,
+        isUserAdded: true
+      };
+      list.unshift(newIntention);
+      saveStoredList(list);
+      currentIndex = 0;
+      try {
+        sessionStorage.setItem(CURRENT_INDEX_KEY, '0');
+      } catch(e){}
+      renderIntentionCard();
+    };
 
     if (submitBtn && modal && inputTxt) {
       submitBtn.onclick = function() {
