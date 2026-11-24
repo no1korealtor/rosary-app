@@ -1,29 +1,42 @@
 @echo off
-chcp 65001 > nul
 setlocal
 cd /d "%~dp0"
 
+set COMMIT_MSG=%~1
+if "%COMMIT_MSG%"=="" set COMMIT_MSG=feat(rosary): auto synchronized deploy
+
 echo ======================================================
-echo  [묵주기도 앱] 전용 독립 저장소 초고속 다이렉트 배포
+echo  [묵주기도 ?? ?�용 ?�?�소 �?Vercel ?�운???�합 ?�시 배포
+echo  - 커밋 메시지: %COMMIT_MSG%
 echo ======================================================
 
 echo.
-echo [1/2] index.html 동기화 중...
-copy /Y "rosary.html" "index.html" > nul
+echo [1/4] index.html ?�기??�?(rosary.html -> index.html)...
+copy /Y rosary.html index.html > nul
 
 echo.
-echo [2/2] GitHub 저장소(rosary-app)로 즉시 배포 중...
+echo [2/4] rosary-app GitHub ?�?�소 ?�시 �?..
 git add -A
-git commit -m "feat: fast direct deploy to standalone rosary-app"
+git commit -m "%COMMIT_MSG%"
 git push origin main
 
-if errorlevel 1 (
+echo.
+echo [3/4] ?�운??Vercel ?�?�소 (consult_diary) ?�기??복사 �?..
+if exist "C:\antigravity\real_consult_diary" (
+    copy /Y rosary.html C:\antigravity\real_consult_diary\rosary.html > nul
+    copy /Y rosary.html C:\antigravity\real_consult_diary\index.html > nul
+
     echo.
-    echo [안내] 배포 중 오류가 발생했습니다.
-    exit /b 1
+    echo [4/4] ?�운??Vercel ?�?�소 (consult_diary) GitHub ?�시 �?..
+    git -C C:\antigravity\real_consult_diary add rosary.html index.html
+    git -C C:\antigravity\real_consult_diary commit -m "%COMMIT_MSG%"
+    git -C C:\antigravity\real_consult_diary pull --rebase origin main
+    git -C C:\antigravity\real_consult_diary push origin main
+) else (
+    echo [?�내] real_consult_diary ?�더가 ?�습?�다.
 )
 
 echo.
 echo ======================================================
-echo  ✨ 묵주기도 앱이 초고속으로 완벽하게 배포되었습니다!
+echo  묵주기도 ???�시 ?�동 배포 ?�료!
 echo ======================================================
