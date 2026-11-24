@@ -4867,30 +4867,9 @@ showCrucifixKissOverlay(onComplete) {
       console.warn("Liturgical update error:", e);
     }
 
-    // 1. 지난 기도 이어하기 카드 상태 업데이트
-    const saved = this.loadSavedProgress();
-    if (saved && typeof saved.stepIndex === "number" && saved.stepIndex > 0 && saved.stepIndex < (this.steps ? this.steps.length : 68)) {
-      if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "flex";
-      }
-      if (saved.prayerType === "divine_mercy") {
-        if (this.dom.introResumeMystery) {
-          this.dom.introResumeMystery.textContent = isEn ? "Chaplet of Divine Mercy" : "하느님 자비를 구하는 기도";
-        }
-      } else {
-        const mysteries = MYSTERIES[this.settings.lang] || MYSTERIES.ko;
-        const mInfo = mysteries[saved.mysteryKey] || mysteries.joyful;
-        if (this.dom.introResumeMystery) {
-          this.dom.introResumeMystery.textContent = mInfo.name;
-        }
-      }
-      if (this.dom.introResumeStep) {
-        this.dom.introResumeStep.textContent = `${saved.section} · ${saved.beadLabel}`;
-      }
-    } else {
-      if (this.dom.introResumeCard) {
-        this.dom.introResumeCard.style.display = "none";
-      }
+    // 1. 지난 기도 이어하기 카드 상태 업데이트 (첫 화면에서는 항상 숨김 - 하단 '묵주기도 시작하기' 클릭 시 모달에서 선택)
+    if (this.dom.introResumeCard) {
+      this.dom.introResumeCard.style.display = "none";
     }
 
     // 2. 신비 그리드 및 상세 묵상 안내문 동기화
