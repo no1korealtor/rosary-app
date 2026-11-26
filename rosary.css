@@ -2069,7 +2069,8 @@ input:checked + .toggle-slider:before {
 
 .intro-toggle-btn {
   flex: 1;
-  height: 38px;
+  min-height: 38px;
+  height: auto;
   border-radius: 8px;
   border: 1px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.05);
